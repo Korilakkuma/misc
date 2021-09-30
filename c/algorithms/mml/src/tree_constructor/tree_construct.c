@@ -93,17 +93,23 @@ void tree_destruct(Tree *trees) {
   }
 
   // Increment until pointing EOM
-  while (trees->token->type != EOM) {
+  if (trees->token->type != EOM) {
     // Next right partial tree
     trees += 2;
+
+    tree_destruct(trees);
+    return;
   }
 
-  while (trees->token->type != TEMPO) {
+  // Decrement until pointing TEMPO
+  if (trees->token->type != TEMPO) {
     // Previous parent
     trees -= 2;
 
     free(trees->left);
     free(trees->right);
+
+    tree_destruct(trees);
   }
 }
 
