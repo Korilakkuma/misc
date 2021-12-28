@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <getopt.h>
 #include <stdint.h>
 #include "alsa/asoundlib.h"
@@ -44,3 +46,45 @@ static int resample = TRUE;
 
 static WAVEFormatDesc fmt_desc;
 static WAVEFileDesc file_desc;
+
+int main(int argc, char **argv) {
+  static const struct option long_option[] = {
+    { "help",       0, NULL, 'h' },
+    { "device",     1, NULL, 'D' },
+    { "mmap",       0, NULL, 'm' },
+    { "verbose",    0, NULL, 'v' },
+    { "noresample", 0, NULL, 'n' },
+  };
+
+  int c;
+
+  while ((c = getopt_long(argc, argv, "hD:mvn", long_option, NULL) != -1)) {
+    switch (c) {
+      case 'h':
+        usage();
+        return 0;
+      case 'D':
+        device = strdup(optarg);
+        break;
+      case 'm':
+        mmap = TRUE;
+        break;
+      case 'v':
+        verbose = TRUE;
+        break;
+      case 'n':
+        resample = FALSE;
+        break;
+      default:
+        fputs("`--help` confirm usage\n", stderr);
+        exit(EXIT_FAILURE);
+    }
+  }
+
+  if (optind > (argc - 1)) {
+    usage();
+    return 0;
+  }
+
+  return 0;
+}
