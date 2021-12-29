@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <stdint.h>
+#include <errno.h>
 #include "alsa/asoundlib.h"
 #include "WaveFormat.h"
 
@@ -56,7 +60,13 @@ int main(int argc, char **argv) {
     { "noresample", 0, NULL, 'n' },
   };
 
+  snd_pcm_t *handle = NULL;
+  snd_pcm_hw_params_t *hwparams;
+  snd_pcm_sw_params_t *swparams;
+
   int c;
+  int err;
+  int exit_code = 0;
 
   while ((c = getopt_long(argc, argv, "hD:mvn", long_option, NULL) != -1)) {
     switch (c) {
@@ -84,6 +94,38 @@ int main(int argc, char **argv) {
   if (optind > (argc - 1)) {
     usage();
     return 0;
+  }
+
+  const char *file_path = NULL;
+
+  snd_pcm_hw_params_alloca(&hwparams);
+  snd_pcm_sw_params_alloca(&swparams);
+
+  file_path = argv[optind];
+
+  int fd = open(file_path, O_RDONLY);
+
+  if (fd < 0) {
+    fputs("Open WAVE File Error\n", stderr);
+    exit_code = errno;
+    goto clean;
+  }
+
+  file_desc.fd = fd;
+
+clean:
+  if (output != NULL) {
+    snd_output_close(output);
+  }
+
+  if (handle != NULL) {
+    snd_pcm_close(handle);
+  }
+
+  snd_config_update_free_global();
+
+  if (fd >= 0) {
+    close(fd);
   }
 
   return 0;
