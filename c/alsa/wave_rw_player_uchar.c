@@ -37,7 +37,7 @@ static snd_pcm_sframes_t *writei_func(snd_pcm_t *handle, const void *buffer, snd
 static char *device = "plughw:0,0";
 static snd_pcm_format_t format = SND_PCM_FORMAT_S32_LE;
 static unsigned int rate = 44100;
-static unsigned int number_of_chanels = 1;
+static unsigned int number_of_channels = 1;
 static unsigned int buffer_time = 0;
 static unsigned int period_time = 0;
 static snd_pcm_uframes_t buffer_size = 0;
@@ -64,6 +64,8 @@ int main(int argc, char **argv) {
   snd_pcm_hw_params_t *hwparams;
   snd_pcm_sw_params_t *swparams;
 
+  unsigned short qbits;
+  double play_time = 0.0;
   int c;
   int err;
   int exit_code = 0;
@@ -112,6 +114,22 @@ int main(int argc, char **argv) {
   }
 
   file_desc.fd = fd;
+
+  if (wave_read_header() != 0) {
+    exit_code = EXIT_FAILURE;
+    goto clean;
+  }
+
+  if (fmt_desc.bits_per_sample > 32) {
+    fprintf(stderr, "Not support quantization bit (%d)\n", fmt_desc.bits_per_sample);
+    exit_code = EXIT_FAILURE;
+    goto clean;
+  }
+
+  number_of_channels = (unsigned int)fmt_desc.number_of_channels;
+  rate               = fmt_desc.samples_per_sec;
+  qbits              = fmt_desc.bits_per_sample;
+  play_time          = (double)file_desc.frame_size / (double)rate;
 
 clean:
   if (output != NULL) {
