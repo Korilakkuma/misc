@@ -131,6 +131,28 @@ int main(int argc, char **argv) {
   qbits              = fmt_desc.bits_per_sample;
   play_time          = (double)file_desc.frame_size / (double)rate;
 
+  printf("=== WAVE file info ===\n");
+  printf("filename: %s\n", file_path);
+  printf("sample rate: %d Hz\n", rate);
+  printf("number of channels: %d channels\n", number_of_channels);
+
+  switch (qbits) {
+    case 16:
+      format = SND_PCM_FORMAT_S16_LE;
+      printf("Quantization bits: signed 16 bits\n");
+      break;
+    case 24:
+      format = SND_PCM_FORMAT_S24_LE;
+      printf("Quantization bits: signed 24 bits\n");
+      break;
+    case 32:
+    default:
+      printf("Quantization bits: signed 32 bits or unknown\n");
+      break;
+  }
+
+  printf("duration: %.01f sec\n\n", play_time);
+
 clean:
   if (output != NULL) {
     snd_output_close(output);
