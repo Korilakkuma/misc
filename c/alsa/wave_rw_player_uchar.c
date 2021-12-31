@@ -64,6 +64,7 @@ int main(int argc, char **argv) {
   snd_pcm_hw_params_t *hwparams;
   snd_pcm_sw_params_t *swparams;
 
+  unsigned char *transfer_method;
   unsigned short qbits;
   double play_time = 0.0;
   int c;
@@ -152,6 +153,22 @@ int main(int argc, char **argv) {
   }
 
   printf("duration: %.01f sec\n\n", play_time);
+
+  err = snd_output_stdio_attach(&output, stdout, 0);
+
+  if (err < 0) {
+    fprintf(stderr, "Attaching that is log settings for ALSA failed: %s\n", snd_strerror(err));
+    exit_code = err;
+    goto clean;
+  }
+
+  if (mmap) {
+    writei_func = snd_pcm_mmap_writei;
+    transfer_method = "mmap_write";
+  } else {
+    writei_func = snd_pcm_writei;
+    transfer_method = "write";
+  }
 
 clean:
   if (output != NULL) {
