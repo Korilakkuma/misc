@@ -170,6 +170,48 @@ int main(int argc, char **argv) {
     transfer_method = "write";
   }
 
+  if ((err = snd_pcm_open(&handle, device, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    fprintf(stderr, "PCM OPEN failed: %s\n", snd_strerror(err));
+    exit_code = err;
+    goto clean;
+  }
+
+  if ((err = set_hwparams(&handle, hwparams)) < 0) {
+    fprintf(stderr, "Set HW parameters failed: %s\n", snd_strerror(err));
+    printf("=== PCM HW parameters ===\n");
+    snd_pcm_hw_params_dump(hwparams, output);
+    printf("\n");
+    exit_code = err;
+    goto clean;
+  }
+
+  if ((err = set_swparams(&handle, swparams)) < 0) {
+    fprintf(stderr, "Set SW parameters failed: %s\n", snd_strerror(err));
+    printf("=== PCM SW parameters ===\n");
+    snd_pcm_sw_params_dump(swparams, output);
+    printf("\n");
+    exit_code = err;
+    goto clean;
+  }
+
+  if (verbose) {
+    printf("=== PCM info ===\n");
+    snd_pcm_dump(handle, output);
+    printf("\n");
+  }
+
+  printf("Inner Format: %s\n", snd_pcm_format_name(format));
+  printf("PCM Device: %s\n", device);
+  printf("Transfer Method: %s\n\n", transfer_method);
+
+  err = write_uchar(handle);
+
+  if (err != 0) {
+    fputs("Playback failed\n", stderr);
+    exit_code = err;
+    goto clean;
+  }
+
 clean:
   if (output != NULL) {
     snd_output_close(output);
