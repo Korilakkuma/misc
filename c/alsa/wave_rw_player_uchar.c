@@ -229,3 +229,27 @@ clean:
 
   return 0;
 }
+
+static int wave_read_header(void) {
+  FOURCC chunk_id;
+  DWORD chunk_size;
+  GUID sub_format;
+
+  lseek(file_desc.fd, 0, SEEK_SET);
+  read(file_desc.fd, &chunk_id, size(FOURCC));
+  read(file_desc.fd, &chunk_size, size(DWORD));
+
+  if (chunk_id != *(FOURCC *)RIFF_ID) {
+    fputs("File error: Not RIFF form\n", stderr);
+    exit(EXIT_FAILURE);
+  }
+
+  read(file_desc.fd, &chunk_id, sizeof(FOURCC));
+
+  if (chunk_id != *(FOURCC *)WAVE_ID) {
+    fputs("File error: Not WAVE form\n", stderr);
+    exit(EXIT_FAILURE);
+  }
+
+  return 0;
+}
