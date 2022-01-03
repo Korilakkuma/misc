@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -249,6 +250,53 @@ static int wave_read_header(void) {
   if (chunk_id != *(FOURCC *)WAVE_ID) {
     fputs("File error: Not WAVE form\n", stderr);
     exit(EXIT_FAILURE);
+  }
+
+  while (TRUE) {
+    read(file_desc.fd, &chunk_id, sizeof(FOURCC));
+    read(file_desc.fd, &chunk_size, sizeof(FOURCC));
+
+    if (chunk_id == *(FOURCC *)FMT_ID) {
+      if ((chunk_size != FORMAT_CHUNK_PCM_SIZE) && (chunk_size != FORMAT_CHUNK_EX_SIZE) && (chunk_size != FORMAT_CHUNK_EXTENSIBLE_SIZE)) {
+        fprintf(stderr, "Chunk Size Error: %d\n", chunk_size);
+        exit(EXIT_FAILURE);
+      }
+
+      read(file_desc.fd, &fmt_desc, FORMAT_CHUNK_PCM_SIZE);
+
+      if ((fmt_desc.format_tag != WAVE_FORMAT_PCM) && (fmt_desc.format_tag != WAVE_FORMAT_EXTENSIBLE)) {
+        fprintf(stderr, "Format Error: %x\n", fmt_desc.format_tag);
+        exit(EXIT_FAILURE);
+      }
+
+      switch (chunk_size) {
+        case FORMAT_CHUNK_EXTENSIBLE_SIZE:
+          lseek(file_desc.fd, 8, SEEK_CUR);
+          read(file_desc.fd, &sub_format, sizeof(GUID));
+
+          if (sub_format.sub_format_code != WAVE_FORMAT_PCM) {
+            fprintf(stderr, "Extended sub format code Error: %x\n", sub_format.sub_format_code);
+            exit(EXIT_FAILURE);
+          } else if (memcmp(sub_format.wave_guid_tag, WAVE_GUID_TAG, 14) != 0) {
+            fprintf(stderr, "GUID = %x Not WAVE GUID TAG\n", (unsigned int)sub_format.wave_guid_tag);
+          } else {
+            printf("Chunk Size = %d, WAVE FORMAT EXTENSIBLE LPCM\n", chunk_size);
+          }
+
+          break;
+        case FORMAT_CHUNK_EX_SIZE:
+          lseek(file_desc.fd, 2, SEEK_CUR);
+          printf("Chunk Size = %d WAVE FORMAT EX LPCM\n", chunk_size);
+          break;
+        default:
+          printf("Chunk Size = %d Standard WAVE LPCM\n", chunk_size);
+          break;
+      }
+    } else if (chunk_id == *(FOURCC *)DATA_ID) {
+      file_desc.frame_size = (long)chunk_size / (long)fmt_desc.data_frame_size;
+    } else {
+      lseek(file_desc.fd, (off_t)chunk_size, SEEK_CUR);
+    }
   }
 
   return 0;
