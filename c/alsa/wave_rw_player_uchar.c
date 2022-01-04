@@ -301,3 +301,116 @@ static int wave_read_header(void) {
 
   return 0;
 }
+
+static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
+  unsigned int rate_near;
+  int dir;
+  int err;
+
+  err = snd_pcm_hw_params_any(handle, hwparams);
+
+  if (err < 0) {
+    fprintf(stderr, "None applicable hardware config: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_hw_params_set_rate_resample(handle, hwparams, resample);
+
+  if (err < 0) {
+    fprintf(stderr, "Resampling failed: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_hw_params_set_access(handle, hwparams, mmap ? SND_PCM_ACCESS_MMAP_INTERLEAVED : SND_PCM_ACCESS_RW_INTERLEAVED);
+
+  if (err < 0) {
+    fprintf(stderr, "Access type is not applicable: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_hw_params_set_format(handle, hwparams, format);
+
+  if (err < 0) {
+    fprintf(stderr, "Sample format is not applicable: %s\n", snd_strerror(err));
+    fputs("Applicable formats\n", stderr);
+
+    for (int fmt = 0; fmt < SND_PCM_FORMAT_LAST; fmt++) {
+      if (snd_pcm_hw_params_test_format(handle, hwparams, (snd_pcm_format_t)fmt) == 0) {
+        fprintf(stderr, "- %s\n", snd_pcm_format_name((snd_pcm_format_t)fmt));
+      }
+    }
+
+    return err;
+  }
+
+  err = snd_pcm_hw_params_set_channels(handle, hwparams, number_of_channels);
+
+  if (err < 0) {
+    fprintf(stderr, "The number of channels (%i) is not applicable: %s\n", number_of_channels, snd_strerror(err));
+    return err;
+  }
+
+  rate_near = rate;
+
+  err = snd_pcm_hw_params_set_rate_near(handle, hwparams, &rate_near, 0);
+
+  if (err < 0) {
+    fprintf(stderr, "Sample rate (%i Hz) is not applicable: %s\n", rate, snd_strerror(err));
+    return err;
+  }
+
+  if (rate_near != rate) {
+    fprintf(stderr, "Sample rate is not consistent (Expected %i Hz, Actual %i Hz)\n", rate, rate_near);
+    return -EINVAL;
+  }
+
+  err = snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_Time, &dir);
+
+  if (buffer_time > 500000) {
+    buffer_time = 500000;
+  }
+
+  if (buffer_time > 0) {
+    period_time = buffer_time / 4;
+  } else {
+    fputs("buffer time should be more than 0\n", stderr);
+    return -EINVAL;
+  }
+
+  err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams, &buffer_time, &dir);
+
+  if (err < 0) {
+    fprintf(stderr, "buffer time (%i) is not applicable: %s\n", buffer_time, snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_hw_params_set_period_time_near(handle, hwparams, &period_time, &dir);
+
+  if (err < 0) {
+    fprintf(stderr, "period time (%i) is not applicable: %s\n", period_time, snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_hw_params(handle, hwparams);
+
+  if (err < 0) {
+    fprintf(stderr, "Hardware parameters are not applicable: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_hw_params_get_buffer_size(hwparams, &buffer_size);
+
+  if (err < 0) {
+    fprintf(stderr, "buffer size cannot be gotten: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_hw_params_get_period_size(hwparams, &period_size, &dir);
+
+  if (err < 0) {
+    fprintf(stderr, "period size cannot be gotten: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  return 0;
+}
