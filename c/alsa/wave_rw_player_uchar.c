@@ -414,3 +414,37 @@ static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
 
   return 0;
 }
+
+static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams) {
+  int err;
+
+  err = snd_pcm_sw_params_current(handle, swparams);
+
+  if (err < 0) {
+    fprintf(stderr, "Current software parameters are unknown: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_sw_params_set_start_threshold(handle, swparams, ((buffer_size / period_size) * period_size));
+
+  if (err < 0) {
+    fprintf(stderr, "Start threshold is not applicable: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_sw_params_set_avail_min(handle, swparams, period_size);
+
+  if (err < 0) {
+    fprintf(stderr, "Available minimum frame size is not applicable: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  err = snd_pcm_sw_params(handle, swparams);
+
+  if (err < 0) {
+    fprintf(stderr, "Software parameters are not applicable: %s\n", snd_strerror(err));
+    return err;
+  }
+
+  return 0;
+}
