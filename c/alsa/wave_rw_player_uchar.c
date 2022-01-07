@@ -448,3 +448,74 @@ static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams) {
 
   return 0;
 }
+
+static int write_uchar(snd_pcm_t *handle) {
+  unsigned char *buf_ptr;
+  unsigned short frame_bytes = fmt_desc.data_frame_size;
+
+  const long num_sound_frames = file_desc.frame_size;
+
+  long n_frames_bytes = 0;
+  long frame_count = 0;
+  long num_play_frames = 0;
+  long read_frames = num_sound_frames;
+  long res_frames = num_sound_frames;
+
+  int err = 0;
+
+  unsigned char *frame_block = (unsigned char *)malloc(period_size * frame_bytes);
+
+  if (frame_block == NULL) {
+    fputs("Memory Allocation is failure\n", stderr);
+    err = EXIT_FAILURE;
+    goto clean;
+  }
+
+  n_frames_bytes = (long)(period_size * frame_bytes);
+
+  while (res_frames > 0) {
+    read_frames = (long)read(file_desc.fd, frame_block, ((size_t)n_frames_bytes / frame_bytes));
+    frame_count = read_frames;
+
+    num_play_frames += read_frames;
+
+    while (frame_count > 0) {
+      err = (int)writei_func(handle, buf_ptr, (snd_pcm_uframes_t)frame_count);
+
+      if (err == -EAGAIN) {
+        continue;
+      }
+
+      if (err < 0) {
+        if (snd_pcm_recover(handle, err, 0) < 0) {
+          fprintf(stderr, "Write transfer error: %s\n", snd_strerror(err));
+          goto clean;
+        }
+
+        break;
+      }
+    }
+
+    buf_ptr += (err * frame_bytes);
+    frame_count -= err;
+
+    res_frames = num_sound_frames - num_play_frames;
+
+    if (res_frames <= (long)period_size) {
+      n_frames_bytes = (long)(res_frames * frame_bytes);
+    }
+  }
+
+  snd_pcm_drop(handle);
+
+  printf("Summary: %lu frame played\n", num_play_frames);
+
+  err = 0;
+
+clean:
+  if (frame_block != NULL) {
+    free(frame_block);
+  }
+
+  return err;
+}
