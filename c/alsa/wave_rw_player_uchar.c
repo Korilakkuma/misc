@@ -519,3 +519,24 @@ clean:
 
   return err;
 }
+
+static void usage(void) {
+  printf("Usage: ./wave_rw_play_uchar [options] ... [sound file] ...\n");
+  printf("-h, --help                usage\n");
+  printf("-D, --device=devicename   playback device\n");
+  printf("-m, --mmap                mmap_write transfer\n");
+  printf("-v, --verbose             show parameters\n");
+  printf("-n, --noresample          prohibit resample\n\n");
+
+  printf("Applicable sample formats:");
+
+  for (int k = 0; k < SND_PCM_FORMAT_LAST; k++) {
+    const char *s = snd_pcm_format_name((snd_pcm_format_t)k);
+
+    if (s) {
+      printf(" %s", s);
+    }
+  }
+
+  printf("\n");
+}
