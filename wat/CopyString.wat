@@ -1,5 +1,14 @@
 (module
   (import "env" "buffer" (memory 1))
+  (import "env" "strPosLen" (func $StrPosLen (param i32 i32)))
+
+  (data (i32.const 256) "Know the length of this string")  ;; 30 chars
+  (data (i32.const 384) "Also know the length of this string")  ;; 35 chars
+
+  (func (export "main")
+    (call $StrPosLen (i32.const 256) (i32.const 30))
+    (call $StrPosLen (i32.const 384) (i32.const 35))
+  )
 
   (func $CopyByte (param $source i32) (param $dest i32) (param $length i32)
     (local $lastSourceByte i32)
