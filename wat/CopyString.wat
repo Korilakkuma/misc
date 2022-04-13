@@ -18,6 +18,11 @@
     (call $StrNull (i32.const 128))
     (call $StrPrefix (i32.const 512))
     (call $StrPrefix (i32.const 640))
+    ;; (call $StrPosLen (i32.const 256) (i32.const 30))
+    ;; (call $StrPosLen (i32.const 384) (i32.const 35))
+    ;; (call $CopyString (i32.const 256) (i32.const 384) (i32.const 30))
+    ;; (call $StrPosLen (i32.const 384) (i32.const 35))
+    ;; (call $StrPosLen (i32.const 384) (i32.const 30))
   )
 
   (func $CopyByte (param $source i32) (param $dest i32) (param $length i32)
@@ -90,7 +95,7 @@
     )
   )
 
-  (func (export "CopyString") (param $source i32) (param $dest i32) (param $length i32)
+  (func $CopyString (param $source i32) (param $dest i32) (param $length i32)
     (local $startSourceByte i32)
     (local $startDestByte i32)
     (local $singels i32)
