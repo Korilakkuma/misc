@@ -21,4 +21,5 @@ WebAssembly
   .instantiate(new Uint8Array(bytes), importObject)
   .then(({ instance }) => {
     instance.exports.toString10(num);
+    instance.exports.toString16(num);
   });
