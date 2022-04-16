@@ -22,4 +22,5 @@ WebAssembly
   .then(({ instance }) => {
     instance.exports.toString10(num);
     instance.exports.toString16(num);
+    instance.exports.toString2(num);
   });
