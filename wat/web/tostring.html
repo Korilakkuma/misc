@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>toString | WebAssembly on Web Browser</title>
+  </head>
+  <body>
+    <section>
+      <h1>toString</h1>
+      <input type="number" id="number" value="0" min="0" max="2147483647" step="1" />
+      <button type="button" id="button">Convert</button>
+      <ul id="output">
+        <li>Decimal</li>
+        <li>Hex</li>
+        <li>Binary</li>
+      </ul>
+    </section>
+    <nav>
+      <ul>
+        <li><a href="./index.html">Top</a></li>
+        <li><a href="./calculator.html">Calculator</a></li>
+        <li><a href="./collide.html">Collide</a></li>
+      </ul>
+    </nav>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const memory = new WebAssembly.Memory({ initial: 1 });
+
+        const importObject = {
+          env: {
+            memory
+          }
+        };
+
+        WebAssembly
+          .instantiateStreaming(fetch('./tostring.wasm'), importObject)
+          .then(({ instance }) => {
+            document.getElementById('button').addEventListener('click', (event) => {
+              const num    = document.getElementById('number').valueAsNumber;
+              const length = instance.exports.toStringAsList(num);
+              const bytes  = new Uint8Array(memory.buffer, 1024, length);
+              const html   = new TextDecoder('utf8').decode(bytes);
+
+              document.getElementById('output').innerHTML = html;
+            }, false);
+          });
+     }, false);
+    </script>
+  </body>
+</html>
