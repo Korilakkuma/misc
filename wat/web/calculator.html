@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator | WebAssembly on Web Browser</title>
+  </head>
+  <body>
+    <section>
+      <h1>Calculator</h1>
+      <input type="number" id="number-1" value="0" min="-2147483648" max="2147483647" step="1" />
+      <input type="number" id="number-2" value="0" min="-2147483648" max="2147483647" step="1" />
+      <select id="select-operator">
+        <option value="+">+</option>
+        <option value="-">-</option>
+        <option value="*">*</option>
+        <option value="/">/</option>
+      </select>
+      <button type="button" id="button-calculate">Calc</button>
+      <span id="result"></span>
+    </section>
+    <nav>
+      <ul>
+        <li><a href="./index.html">Top</a></li>
+        <li><a href="./tostring.html">toString</a></li>
+        <li><a href="./lifegame.html">Life Game</a></li>
+      </ul>
+    </nav>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const importObject = {
+        };
+
+        WebAssembly
+          .instantiateStreaming(fetch('./calculator.wasm'), importObject)
+          .then(({ instance }) => {
+            document.getElementById('button-calculate').addEventListener('click', (event) => {
+              const a = document.getElementById('number-1').valueAsNumber;
+              const b = document.getElementById('number-2').valueAsNumber;
+              const o = document.getElementById('select-operator').value;
+              const r = document.getElementById('result');
+
+              switch (o) {
+                case '+':
+                  r.textContent = instance.exports.Add(a, b);
+                  break;
+                case '-':
+                  r.textContent = instance.exports.Sub(a, b);
+                  break;
+                case '*':
+                  r.textContent = instance.exports.Mul(a, b);
+                  break;
+                case '/':
+                  r.textContent = instance.exports.Div(a, b);
+                  break;
+                default:
+                  break;
+              }
+            }, false);
+          });
+     }, false);
+    </script>
+  </body>
+</html>
