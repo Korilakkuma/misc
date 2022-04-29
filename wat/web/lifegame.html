@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Life Game | WebAssembly on Web Browser</title>
+  </head>
+  <body>
+    <section>
+      <h1>Life Game</h1>
+      <div>
+        <select id="select">
+          <option value="0" selected>Select the number of objects</option>
+          <option value="500">500</option>
+          <option value="1000">1000</option>
+          <option value="3000">3000</option>
+          <option value="5000">5000</option>
+          <option value="10000">10000</option>
+        </select>
+      </div>
+      <canvas id="canvas" width="512" height="512" />
+    </section>
+    <nav>
+      <ul>
+        <li><a href="./index.html">Top</a></li>
+        <li><a href="./calculator.html">Calculator</a></li>
+        <li><a href="./tostring.html">toString</a></li>
+      </ul>
+    </nav>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        let animationId = null;
+
+        document.getElementById('select').addEventListener('change', (event) => {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+
+          const noHitColor = 0xff00ff00;
+          const hitColor   = 0xff0000ff;
+
+          const canvas  = document.getElementById('canvas');
+          const context = canvas.getContext('2d');
+
+          const numberOfObjects = Number(event.currentTarget.value);
+          const numberOfPixels  = 4;
+          const width           = canvas.width;
+          const height          = canvas.height;
+          const size            = width * height;
+          const start           = size * 4;  // 4 bytes
+          const startIndex      = start / 4;
+
+          const stride   = 16;
+          const offsetX  = 0;
+          const offsetY  = 4;
+          const offsetVx = 8;
+          const offsetVy = 12;
+
+          const memory      = new WebAssembly.Memory({ initial: 80 });
+          const i8memories  = new Uint8Array(memory.buffer);
+          const i32memories = new Uint32Array(memory.buffer);
+
+          const imagedata = new ImageData(new Uint8ClampedArray(memory.buffer, 0, start), width, height);
+
+          for (let i = 0, len = numberOfObjects * stride; i < len; i++) {
+            const x  = Math.trunc(Math.random() * width);
+            const y  = Math.trunc(Math.random() * height);
+            const vx = Math.trunc((Math.random() * 4) - 2);
+            const vy = Math.trunc((Math.random() * 4) - 2);
+
+            i32memories[startIndex + i + offsetX]  = x;
+            i32memories[startIndex + i + offsetY]  = y;
+            i32memories[startIndex + i + offsetVx] = vx;
+            i32memories[startIndex + i + offsetVy] = vy;
+          }
+
+          const importObject = {
+            env: {
+              memory,
+              noHitColor,
+              hitColor,
+              numberOfObjects,
+              numberOfPixels,
+              canvasSize: 512,
+              width,
+              height,
+              size,
+              start,
+              startIndex,
+              stride,
+              offsetX,
+              offsetY,
+              offsetVx,
+              offsetVy
+            }
+          };
+
+          if (numberOfObjects === 0) {
+            return;
+          }
+
+          WebAssembly
+            .instantiateStreaming(fetch('./lifegame.wasm'), importObject)
+            .then(({ instance }) => {
+              const lifegame = instance.exports.LifeGame;
+
+              const animate = () => {
+                lifegame();
+                context.putImageData(imagedata, 0, 0);
+                animationId = requestAnimationFrame(animate);
+              };
+
+              context.clearRect(0, 0, width, height);
+
+              animate();
+            });
+        }, false);
+     }, false);
+    </script>
+  </body>
+</html>
