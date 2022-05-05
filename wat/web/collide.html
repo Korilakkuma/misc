@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Life Game | WebAssembly on Web Browser</title>
+    <title>Collide | WebAssembly on Web Browser</title>
   </head>
   <body>
     <section>
-      <h1>Life Game</h1>
+      <h1>Collide</h1>
       <div>
         <select id="select">
           <option value="0" selected>Select the number of objects</option>
@@ -99,12 +99,12 @@
           }
 
           WebAssembly
-            .instantiateStreaming(fetch('./lifegame.wasm'), importObject)
+            .instantiateStreaming(fetch('./collide.wasm'), importObject)
             .then(({ instance }) => {
-              const lifegame = instance.exports.LifeGame;
+              const collide = instance.exports.Collide;
 
               const animate = () => {
-                lifegame();
+                collide();
                 context.putImageData(imagedata, 0, 0);
                 animationId = requestAnimationFrame(animate);
               };

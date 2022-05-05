@@ -17,7 +17,7 @@
   (global $offsetVx (import "env" "offsetVx") i32)
   (global $offsetVy (import "env" "offsetVy") i32)
 
-  (func (export "LifeGame")
+  (func (export "Collide")
     (local $i i32)
     (local $j i32)
 
