@@ -17,8 +17,8 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  long long N = strtol(argv[1], NULL, 10);
-  long long W = strtol(argv[2], NULL, 10);
+  long long N = strtoll(argv[1], NULL, 10);
+  long long W = strtoll(argv[2], NULL, 10);
 
   srand((unsigned int)time(NULL));
 

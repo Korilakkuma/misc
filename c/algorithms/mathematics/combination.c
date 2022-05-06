@@ -10,8 +10,8 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  long long n = strtol(argv[1], NULL, 10);
-  long long r = strtol(argv[2], NULL, 10);
+  long long n = strtoll(argv[1], NULL, 10);
+  long long r = strtoll(argv[2], NULL, 10);
 
   long long c = combination(((n > r) ? n : r), ((r < n) ? r : n));
 

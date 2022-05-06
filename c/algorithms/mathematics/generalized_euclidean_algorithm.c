@@ -9,10 +9,10 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  long long r = strtol(argv[1], NULL, 10);
+  long long r = strtoll(argv[1], NULL, 10);
 
   for (int i = 0, end = argc - 2; i < end; i++) {
-    long long n = strtol(argv[i + 2], NULL, 10);
+    long long n = strtoll(argv[i + 2], NULL, 10);
 
     r = euclidean_algorithm(r, n);
   }

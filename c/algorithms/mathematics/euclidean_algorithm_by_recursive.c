@@ -9,8 +9,8 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  long long n1 = strtol(argv[1], NULL, 10);
-  long long n2 = strtol(argv[2], NULL, 10);
+  long long n1 = strtoll(argv[1], NULL, 10);
+  long long n2 = strtoll(argv[2], NULL, 10);
 
   long long r = euclidean_algorithm(n1, n2);
 
