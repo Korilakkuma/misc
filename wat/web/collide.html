@@ -61,16 +61,18 @@
 
           const imagedata = new ImageData(new Uint8ClampedArray(memory.buffer, 0, start), width, height);
 
-          for (let i = 0, len = numberOfObjects * stride; i < len; i++) {
+          const strideIndex = stride / 4;
+
+          for (let i = 0, len = numberOfObjects * strideIndex; i < len; i += strideIndex) {
             const x  = Math.trunc(Math.random() * width);
             const y  = Math.trunc(Math.random() * height);
             const vx = Math.trunc((Math.random() * 4) - 2);
             const vy = Math.trunc((Math.random() * 4) - 2);
 
-            i32memories[startIndex + i + offsetX]  = x;
-            i32memories[startIndex + i + offsetY]  = y;
-            i32memories[startIndex + i + offsetVx] = vx;
-            i32memories[startIndex + i + offsetVy] = vy;
+            i32memories[startIndex + i + 0] = x;
+            i32memories[startIndex + i + 1] = y;
+            i32memories[startIndex + i + 2] = vx;
+            i32memories[startIndex + i + 3] = vy;
           }
 
           const importObject = {
