@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collide (use JavaScript) | WebAssembly on Web Browser</title>
+  </head>
+  <body>
+    <section>
+      <h1>Collide (use JavaScript)</h1>
+      <div>
+        <select id="select">
+          <option value="0" selected>Select the number of objects</option>
+          <option value="500">500</option>
+          <option value="1000">1000</option>
+          <option value="3000">3000</option>
+          <option value="5000">5000</option>
+          <option value="10000">10000</option>
+        </select>
+      </div>
+      <canvas id="canvas" width="512" height="512" />
+    </section>
+    <nav>
+      <ul>
+        <li><a href="./index.html">Top</a></li>
+        <li><a href="./calculator.html">Calculator</a></li>
+        <li><a href="./tostring.html">toString</a></li>
+      </ul>
+    </nav>
+    <script>
+      class Collider {
+        constructor(width, height) {
+          this.x  = Math.trunc(Math.random() * width)   | 0;
+          this.y  = Math.trunc(Math.random() * height)  | 0;
+          this.vx = Math.trunc((Math.random() * 4) - 2) | 0;
+          this.vy = Math.trunc((Math.random() * 4) - 2) | 0;
+
+          this.color = 'rgb(0, 255, 0)';
+        }
+
+        move() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.x &= 0x000001ff;
+          this.y &= 0x000001ff;
+        }
+
+        draw(context) {
+          context.fillStyle = this.color;
+          context.fillRect(this.x, this.y, 1, 1);
+        }
+
+        isHit(c2) {
+          const distX = this.x - c2.x;
+          const distY = this.y - c2.y;
+
+          if ((Math.abs(distX) <= 4) && (Math.abs(distY) <= 4)) {
+            this.color = 'rgb(255, 0, 0)';
+
+            return true;
+          }
+
+          this.color = 'rgb(0, 255, 0)';
+
+          return false;
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        let animationId = null;
+
+        document.getElementById('select').addEventListener('change', (event) => {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+
+          const canvas  = document.getElementById('canvas');
+          const context = canvas.getContext('2d');
+
+          const numberOfObjects = Number(event.currentTarget.value) | 0;
+          const width           = canvas.width;
+          const height          = canvas.height;
+          const size            = width * height;
+
+          if (numberOfObjects === 0) {
+            return;
+          }
+
+          const colliders = [];
+
+          for (let i = 0; i < numberOfObjects; i++) {
+            colliders.push(new Collider(width, height));
+          }
+
+          const animate = () => {
+            context.fillStyle = 'rgb(0, 0, 0)';
+            context.fillRect(0, 0, width, height);
+
+            colliders.forEach((c) => {
+              c.move();
+            });
+
+            for (let i = 0; i < numberOfObjects; i++) {
+              for (let j = 0; j < numberOfObjects; j++) {
+                if (i === j) {
+                  continue;
+                }
+
+                if (colliders[i].isHit(colliders[j])) {
+                  colliders[i].draw(context);
+                  break;
+                }
+
+                colliders[i].draw(context);
+              }
+            }
+
+            animationId = requestAnimationFrame(animate);
+          };
+
+          animate();
+        }, false);
+     }, false);
+    </script>
+  </body>
+</html>
