@@ -14,26 +14,12 @@
 #define TRUE  1
 #define FALSE 0
 
-// TODO:
-typedef struct {
-} snd_pcm_t;
-
-typedef struct {
-} snd_pcm_hw_params_t;
-
-typedef struct {
-} snd_pcm_sw_params_t;
-
-typedef uint8_t snd_pcm_uframes_t;
-typedef int8_t  snd_pcm_sframes_t;
-typedef int32_t snd_pcm_format_t;
-
 static int wave_read_header(void);
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
 static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams);
 static int write_uchar(snd_pcm_t *handle);
 static void usage(void);
-static snd_pcm_sframes_t *writei_func(snd_pcm_t *handle, const void *buffer, snd_pcm_uframes_t size);
+// static snd_pcm_sframes_t (*writei_func(snd_pcm_t *handle, const void *buffer, snd_pcm_uframes_t size));
 
 static char *device = "plughw:0,0";
 static snd_pcm_format_t format = SND_PCM_FORMAT_S32_LE;
@@ -65,12 +51,12 @@ int main(int argc, char **argv) {
   snd_pcm_hw_params_t *hwparams;
   snd_pcm_sw_params_t *swparams;
 
-  unsigned char *transfer_method;
+  char *transfer_method;
   unsigned short qbits;
   double play_time = 0.0;
   int c;
   int err;
-  int exit_code = 0;
+  int status_code = 0;
 
   while ((c = getopt_long(argc, argv, "hD:mvn", long_option, NULL) != -1)) {
     switch (c) {
@@ -111,20 +97,20 @@ int main(int argc, char **argv) {
 
   if (fd < 0) {
     fputs("Open WAVE File Error\n", stderr);
-    exit_code = errno;
+    status_code = errno;
     goto clean;
   }
 
   file_desc.fd = fd;
 
   if (wave_read_header() != 0) {
-    exit_code = EXIT_FAILURE;
+    status_code = EXIT_FAILURE;
     goto clean;
   }
 
   if (fmt_desc.bits_per_sample > 32) {
     fprintf(stderr, "Not support quantization bit (%d)\n", fmt_desc.bits_per_sample);
-    exit_code = EXIT_FAILURE;
+    status_code = EXIT_FAILURE;
     goto clean;
   }
 
@@ -159,39 +145,37 @@ int main(int argc, char **argv) {
 
   if (err < 0) {
     fprintf(stderr, "Attaching that is log settings for ALSA failed: %s\n", snd_strerror(err));
-    exit_code = err;
+    status_code = err;
     goto clean;
   }
 
   if (mmap) {
-    writei_func = snd_pcm_mmap_writei;
     transfer_method = "mmap_write";
   } else {
-    writei_func = snd_pcm_writei;
     transfer_method = "write";
   }
 
   if ((err = snd_pcm_open(&handle, device, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
     fprintf(stderr, "PCM OPEN failed: %s\n", snd_strerror(err));
-    exit_code = err;
+    status_code = err;
     goto clean;
   }
 
-  if ((err = set_hwparams(&handle, hwparams)) < 0) {
+  if ((err = set_hwparams(handle, hwparams)) < 0) {
     fprintf(stderr, "Set HW parameters failed: %s\n", snd_strerror(err));
     printf("=== PCM HW parameters ===\n");
     snd_pcm_hw_params_dump(hwparams, output);
     printf("\n");
-    exit_code = err;
+    status_code = err;
     goto clean;
   }
 
-  if ((err = set_swparams(&handle, swparams)) < 0) {
+  if ((err = set_swparams(handle, swparams)) < 0) {
     fprintf(stderr, "Set SW parameters failed: %s\n", snd_strerror(err));
     printf("=== PCM SW parameters ===\n");
     snd_pcm_sw_params_dump(swparams, output);
     printf("\n");
-    exit_code = err;
+    status_code = err;
     goto clean;
   }
 
@@ -209,7 +193,7 @@ int main(int argc, char **argv) {
 
   if (err != 0) {
     fputs("Playback failed\n", stderr);
-    exit_code = err;
+    status_code = err;
     goto clean;
   }
 
@@ -228,7 +212,7 @@ clean:
     close(fd);
   }
 
-  return 0;
+  return status_code;
 }
 
 static int wave_read_header(void) {
@@ -236,16 +220,27 @@ static int wave_read_header(void) {
   DWORD chunk_size;
   GUID sub_format;
 
+  ssize_t s;
+
   lseek(file_desc.fd, 0, SEEK_SET);
-  read(file_desc.fd, &chunk_id, size(FOURCC));
-  read(file_desc.fd, &chunk_size, size(DWORD));
+  s = read(file_desc.fd, &chunk_id, sizeof(FOURCC));
+
+  if (s == -1) {
+    exit(EXIT_FAILURE);
+  }
+
+  s = read(file_desc.fd, &chunk_size, sizeof(DWORD));
+
+  if (s == -1) {
+    exit(EXIT_FAILURE);
+  }
 
   if (chunk_id != *(FOURCC *)RIFF_ID) {
     fputs("File error: Not RIFF form\n", stderr);
     exit(EXIT_FAILURE);
   }
 
-  read(file_desc.fd, &chunk_id, sizeof(FOURCC));
+  s = read(file_desc.fd, &chunk_id, sizeof(FOURCC));
 
   if (chunk_id != *(FOURCC *)WAVE_ID) {
     fputs("File error: Not WAVE form\n", stderr);
@@ -253,8 +248,17 @@ static int wave_read_header(void) {
   }
 
   while (TRUE) {
-    read(file_desc.fd, &chunk_id, sizeof(FOURCC));
-    read(file_desc.fd, &chunk_size, sizeof(FOURCC));
+    s = read(file_desc.fd, &chunk_id, sizeof(FOURCC));
+
+    if (s == -1) {
+      exit(EXIT_FAILURE);
+    }
+
+    s = read(file_desc.fd, &chunk_size, sizeof(FOURCC));
+
+    if (s == -1) {
+      exit(EXIT_FAILURE);
+    }
 
     if (chunk_id == *(FOURCC *)FMT_ID) {
       if ((chunk_size != FORMAT_CHUNK_PCM_SIZE) && (chunk_size != FORMAT_CHUNK_EX_SIZE) && (chunk_size != FORMAT_CHUNK_EXTENSIBLE_SIZE)) {
@@ -262,7 +266,11 @@ static int wave_read_header(void) {
         exit(EXIT_FAILURE);
       }
 
-      read(file_desc.fd, &fmt_desc, FORMAT_CHUNK_PCM_SIZE);
+      s = read(file_desc.fd, &fmt_desc, FORMAT_CHUNK_PCM_SIZE);
+
+      if (s == -1) {
+        exit(EXIT_FAILURE);
+      }
 
       if ((fmt_desc.format_tag != WAVE_FORMAT_PCM) && (fmt_desc.format_tag != WAVE_FORMAT_EXTENSIBLE)) {
         fprintf(stderr, "Format Error: %x\n", fmt_desc.format_tag);
@@ -272,13 +280,17 @@ static int wave_read_header(void) {
       switch (chunk_size) {
         case FORMAT_CHUNK_EXTENSIBLE_SIZE:
           lseek(file_desc.fd, 8, SEEK_CUR);
-          read(file_desc.fd, &sub_format, sizeof(GUID));
+          s = read(file_desc.fd, &sub_format, sizeof(GUID));
+
+          if (s == -1) {
+            exit(EXIT_FAILURE);
+          }
 
           if (sub_format.sub_format_code != WAVE_FORMAT_PCM) {
             fprintf(stderr, "Extended sub format code Error: %x\n", sub_format.sub_format_code);
             exit(EXIT_FAILURE);
           } else if (memcmp(sub_format.wave_guid_tag, WAVE_GUID_TAG, 14) != 0) {
-            fprintf(stderr, "GUID = %x Not WAVE GUID TAG\n", (unsigned int)sub_format.wave_guid_tag);
+            fprintf(stderr, "GUID = %s Not WAVE GUID TAG\n", sub_format.wave_guid_tag);
           } else {
             printf("Chunk Size = %d, WAVE FORMAT EXTENSIBLE LPCM\n", chunk_size);
           }
@@ -336,7 +348,7 @@ static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
 
     for (int fmt = 0; fmt < SND_PCM_FORMAT_LAST; fmt++) {
       if (snd_pcm_hw_params_test_format(handle, hwparams, (snd_pcm_format_t)fmt) == 0) {
-        fprintf(stderr, "- %s\n", snd_pcm_format_name((snd_pcm_format_t)fmt));
+        // fprintf(stderr, "- %s\n", snd_pcm_format_name((snd_pcm_format_t)fmt));
       }
     }
 
@@ -364,7 +376,7 @@ static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
     return -EINVAL;
   }
 
-  err = snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_Time, &dir);
+  err = snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_time, &dir);
 
   if (buffer_time > 500000) {
     buffer_time = 500000;
@@ -480,7 +492,11 @@ static int write_uchar(snd_pcm_t *handle) {
     num_play_frames += read_frames;
 
     while (frame_count > 0) {
-      err = (int)writei_func(handle, buf_ptr, (snd_pcm_uframes_t)frame_count);
+      if (mmap) {
+        err = (int)snd_pcm_mmap_writei(handle, buf_ptr, (snd_pcm_uframes_t)frame_count);
+      } else {
+        err = (int)snd_pcm_writei(handle, buf_ptr, (snd_pcm_uframes_t)frame_count);
+      }
 
       if (err == -EAGAIN) {
         continue;
