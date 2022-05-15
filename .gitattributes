@@ -1,0 +1,3 @@
+*.html linguist-vendored
+assemblyscript/**/*.js linguist-vendored
+wat/**/*.js linguist-vendored
