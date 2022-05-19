@@ -1,0 +1,24 @@
+{
+  "name": "signaling",
+  "version": "0.0.0",
+  "description": "Signaling Server and Signaling Channel for WebRTC",
+  "main": "",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Korilakkuma/Signaling.git"
+  },
+  "keywords": [
+    "WebRTC",
+    "Signaling"
+  ],
+  "author": "Korilakkuma <rilakkuma.san.xjapan@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Korilakkuma/Signaling/issues"
+  },
+  "homepage": "https://github.com/Korilakkuma/Signaling",
+  "dependencies": {
+    "ws": "^8.6.0"
+  }
+}
