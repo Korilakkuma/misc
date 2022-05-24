@@ -1,0 +1,23 @@
+{
+  "name": "web-push-example-by-fcm",
+  "version": "0.0.0",
+  "description": "Web Push by FCM (Firebase Cloud Messaging)",
+  "main": "server.js",
+  "scripts": {
+    "build": "webpack",
+    "build:watch": "webpack --watch",
+    "serve": "node server.js",
+    "start": "npm run build && npm run serve",
+    "start:watch": "run-p build:watch serve"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "express": "^4.18.1",
+    "firebase": "^9.8.1"
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2"
+  }
+}
