@@ -12,10 +12,10 @@
 
 #define _FILE_OFFSET_BITS 64
 
-enum {
+typedef enum {
   FALSE,
   TRUE
-};
+} BOOL;
 
 static int wave_read_header(void);
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
@@ -33,9 +33,9 @@ static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
 
-static int mmap     = TRUE;
-static int verbose  = FALSE;
-static int resample = TRUE;
+static BOOL mmap     = TRUE;
+static BOOL verbose  = FALSE;
+static BOOL resample = TRUE;
 
 static WAVEFormatDesc fmt_desc;
 static WAVEFileDesc file_desc;

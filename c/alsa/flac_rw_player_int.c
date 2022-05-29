@@ -5,10 +5,10 @@
 #include "FLAC/stream_decoder.h"
 #include "FLAC/metadata.h"
 
-enum {
+typedef enum {
   FALSE,
   TRUE
-};
+} BOOL;
 
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
 static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams);
@@ -34,9 +34,9 @@ static void usage(void);
 
 static snd_pcm_sframes_t (*writei_func)(snd_pcm_t *handle, const void *buffer, snd_pcm_uframes_t size);
 
-static int mmap     = FALSE;
-static int verbose  = FALSE;
-static int resample = TRUE;
+static BOOL mmap     = FALSE;
+static BOOL verbose  = FALSE;
+static BOOL resample = TRUE;
 
 typedef struct {
   FLAC__StreamDecoder *decoder;

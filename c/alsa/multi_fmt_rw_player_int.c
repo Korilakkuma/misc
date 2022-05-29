@@ -4,10 +4,10 @@
 #include "alsa/asoundlib.h"
 #include "sndfile.h"
 
-enum {
+typedef enum {
   FALSE,
   TRUE
-};
+} BOOL;
 
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
 static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams);
@@ -29,9 +29,9 @@ static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
 
-static int mmap     = FALSE;
-static int verbose  = FALSE;
-static int resample = TRUE;
+static BOOL mmap     = FALSE;
+static BOOL verbose  = FALSE;
+static BOOL resample = TRUE;
 
 int main(int argc, char **argv) {
   static const struct option long_option[] = {
