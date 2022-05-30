@@ -31,13 +31,13 @@ static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
 
-static int mmap     = false;
-static int resample = true;
+static bool mmap     = false;
+static bool resample = true;
 
 static char file_path[256] = { 0 };
 
-static int is_play  = false;
-static int is_pause = false;
+static bool is_play  = false;
+static bool is_pause = false;
 
 static pthread_t play_thread;
 
@@ -127,7 +127,7 @@ static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
     return err;
   }
 
-  err = snd_pcm_hw_params_set_rate_resample(handle, hwparams, resample);
+  err = snd_pcm_hw_params_set_rate_resample(handle, hwparams, resample ? 1 : 0);
 
   if (err < 0) {
     return err;
