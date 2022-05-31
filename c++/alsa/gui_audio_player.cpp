@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <string>
 #include <getopt.h>
 #include <pthread.h>
 #include <alsa/asoundlib.h>
@@ -20,8 +21,7 @@ static int gui_write_int(snd_pcm_t *handle);
 static void *player(void *arg);
 static snd_pcm_sframes_t (*writei_func)(snd_pcm_t *handle, const void *buffer, snd_pcm_uframes_t size);
 
-// static std::string device = "plughw:0,0";
-static char *device = "plughw:0,0";
+static std::string device = "plughw:0,0";
 static snd_pcm_format_t format = SND_PCM_FORMAT_S32_LE;
 static unsigned int rate = 44100;
 static unsigned int number_of_channels = 1;
@@ -334,7 +334,7 @@ static void *player(void *arg) {
     writei_func = snd_pcm_writei;
   }
 
-  if ((err = snd_pcm_open(&handle, device, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+  if ((err = snd_pcm_open(&handle, device.c_str(), SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
     goto clean;
   }
 
