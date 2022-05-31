@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include "alsa/asoundlib.h"
-#include "sndfile.h"
+#include <alsa/asoundlib.h>
+#include <sndfile.h>
 
 typedef enum {
   FALSE,

@@ -4,7 +4,7 @@
 #include <math.h>
 #include <string.h>
 #include <limits.h>
-#include "sndfile.h"
+#include <sndfile.h>
 
 static int sample_rate        = 44100;
 static int quantization_bits  = 16;

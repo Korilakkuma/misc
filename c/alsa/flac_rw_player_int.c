@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include "alsa/asoundlib.h"
-#include "FLAC/stream_decoder.h"
-#include "FLAC/metadata.h"
+#include <alsa/asoundlib.h>
+#include <FLAC/stream_decoder.h>
+#include <FLAC/metadata.h>
 
 typedef enum {
   FALSE,

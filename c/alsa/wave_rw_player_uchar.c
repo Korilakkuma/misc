@@ -6,7 +6,7 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <errno.h>
-#include "alsa/asoundlib.h"
+#include <alsa/asoundlib.h>
 #include "WaveFormat.h"
 
 #define _FILE_OFFSET_BITS 64

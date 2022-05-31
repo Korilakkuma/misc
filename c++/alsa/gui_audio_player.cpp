@@ -1,18 +1,18 @@
 #include <cstdlib>
 #include <getopt.h>
 #include <pthread.h>
-#include "alsa/asoundlib.h"
-#include "sndfile.h"
-#include "FL/Fl.H"
-#include "FL/Fl_Window.H"
-#include "FL/Fl_File_Chooser.H"
-#include "FL/Fl_Button.H"
-#include "FL/Fl_Box.H"
-#include "FL/fl_ask.H"
-#include "FL/Fl_Menu_Bar.H"
-#include "FL/Fl_Menu_Item.H"
-#include "FL/Fl_Choice.H"
-#include "FL/Fl_Hor_Value_Slider.H"
+#include <alsa/asoundlib.h>
+#include <sndfile.h>
+#include <FL/Fl.H>
+#include <FL/Fl_Window.H>
+#include <FL/Fl_File_Chooser.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Box.H>
+#include <FL/fl_ask.H>
+#include <FL/Fl_Menu_Bar.H>
+#include <FL/Fl_Menu_Item.H>
+#include <FL/Fl_Choice.H>
+#include <FL/Fl_Hor_Value_Slider.H>
 
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
 static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams);
