@@ -1,3 +1,5 @@
+#include<stdint.h>
+
 #define FORMAT_CHUNK_PCM_SIZE 16
 #define FORMAT_CHUNK_EX_SIZE 18
 #define FORMAT_CHUNK_EXTENSIBLE_SIZE 40
@@ -11,10 +13,10 @@ static char WAVE_ID[4] = { 'W', 'A', 'V', 'E' };
 static char FMT_ID[4]  = { 'f', 'm', 't', ' ' };
 static char DATA_ID[4] = { 'd', 'a', 't', 'a' };
 
-typedef unsigned char  BYTE;
-typedef unsigned short WORD;
-typedef unsigned int   DWORD;
-typedef DWORD          FOURCC;
+typedef uint8_t  BYTE;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+typedef DWORD    FOURCC;
 
 typedef struct GUID {
   WORD sub_format_code;
