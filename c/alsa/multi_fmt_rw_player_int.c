@@ -34,14 +34,18 @@ static BOOL verbose  = FALSE;
 static BOOL resample = TRUE;
 
 int main(int argc, char **argv) {
-  static const struct option long_option[] = {
-    { "help",       0, NULL, 'h' },
-    { "device",     1, NULL, 'D' },
-    { "mmap",       0, NULL, 'm' },
-    { "verbose",    0, NULL, 'v' },
-    { "noresample", 0, NULL, 'n' },
-    { NULL,         0, NULL,  0  }
+  const char *optstring = "hD:mvn";
+
+  const struct option long_option[] = {
+    { "help",       no_argument,       NULL, 'h' },
+    { "device",     required_argument, NULL, 'D' },
+    { "mmap",       no_argument,       NULL, 'm' },
+    { "verbose",    no_argument,       NULL, 'v' },
+    { "noresample", no_argument,       NULL, 'n' },
+    { 0,            0,                 0,     0  }
   };
+
+  int long_index;
 
   snd_pcm_t *handle = NULL;
   snd_pcm_hw_params_t *hwparams;
@@ -54,7 +58,7 @@ int main(int argc, char **argv) {
   int informat;
   int dformat;
 
-  while ((c = getopt_long(argc, argv, "hD:mvn", long_option, NULL) != -1)) {
+  while ((c = getopt_long(argc, argv, optstring, long_option, &long_index)) != -1) {
     switch (c) {
       case 'h':
         usage();
@@ -72,8 +76,7 @@ int main(int argc, char **argv) {
         resample = FALSE;
         break;
       default:
-        fputs("`--help` confirm usage\n", stderr);
-        exit(EXIT_FAILURE);
+        break;
     }
   }
 

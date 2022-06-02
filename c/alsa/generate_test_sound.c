@@ -18,13 +18,17 @@ static double end      = 1.0e-4;
 static void usage(void);
 
 int main(int argc, char **argv) {
-  static const struct option long_option[] = {
-    { "help",       0, NULL, 'h' },
-    { "format",     1, NULL, 'f' },
-    { "rate",       1, NULL, 'r' },
-    { "bits",       1, NULL, 'b' },
-    { NULL,         0, NULL,  0  }
+  const char *optstring = "hf:r:b:";
+
+  const struct option long_option[] = {
+    { "help",   no_argument,       NULL, 'h' },
+    { "format", required_argument, NULL, 'f' },
+    { "rate",   required_argument, NULL, 'r' },
+    { "bits",   required_argument, NULL, 'b' },
+    { 0,        0,                 0,     0  }
   };
+
+  int long_index;
 
   int c;
   char *formatID[] = { "16", "44100", "wav" };
@@ -36,7 +40,7 @@ int main(int argc, char **argv) {
   SNDFILE *outfile;
   SF_INFO outfile_info = { 0 };
 
-  while ((c = getopt_long(argc, argv, "hf:r:b:", long_option, NULL)) != -1) {
+  while ((c = getopt_long(argc, argv, optstring, long_option, &long_index)) != -1) {
     switch (c) {
       case 'h':
         usage();
@@ -77,8 +81,7 @@ int main(int argc, char **argv) {
 
         break;
       default:
-        fputs("`--help` confirm usage\n", stderr);
-        exit(EXIT_FAILURE);
+        break;
     }
   }
 
