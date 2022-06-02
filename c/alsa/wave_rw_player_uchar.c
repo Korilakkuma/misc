@@ -266,7 +266,7 @@ static int wave_read_header(void) {
     }
 
     if (chunk_id == *(FOURCC *)FMT_ID) {
-      if ((chunk_size != FORMAT_CHUNK_PCM_SIZE) && (chunk_size != FORMAT_CHUNK_EX_SIZE) && (chunk_size != FORMAT_CHUNK_EXTENSIBLE_SIZE)) {
+      if ((chunk_size != FORMAT_CHUNK_PCM_SIZE) && (chunk_size != FORMAT_CHUNK_NON_PCM_SIZE) && (chunk_size != FORMAT_CHUNK_EXTENSIBLE_SIZE)) {
         fprintf(stderr, "Chunk Size Error: %d\n", chunk_size);
         exit(EXIT_FAILURE);
       }
@@ -302,7 +302,7 @@ static int wave_read_header(void) {
           }
 
           break;
-        case FORMAT_CHUNK_EX_SIZE:
+        case FORMAT_CHUNK_NON_PCM_SIZE:
           lseek(file_desc.fd, 2, SEEK_CUR);
           printf("Chunk Size = %d WAVE FORMAT EX LPCM\n", chunk_size);
           break;

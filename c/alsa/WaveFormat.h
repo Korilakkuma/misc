@@ -1,7 +1,7 @@
 #include<stdint.h>
 
 #define FORMAT_CHUNK_PCM_SIZE 16
-#define FORMAT_CHUNK_EX_SIZE 18
+#define FORMAT_CHUNK_NON_PCM_SIZE 18
 #define FORMAT_CHUNK_EXTENSIBLE_SIZE 40
 
 #define WAVE_FORMAT_PCM 0x0001  // 2 byte + 14 byte = 16 byte
