@@ -33,7 +33,6 @@ static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
 
-static BOOL mmap     = TRUE;
 static BOOL verbose  = FALSE;
 static BOOL resample = TRUE;
 
@@ -46,7 +45,6 @@ int main(int argc, char **argv) {
   const struct option long_option[] = {
     { "help",       no_argument,       NULL, 'h' },
     { "device",     required_argument, NULL, 'D' },
-    { "mmap",       no_argument,       NULL, 'm' },
     { "verbose",    no_argument,       NULL, 'v' },
     { "noresample", no_argument,       NULL, 'n' },
     { 0,            0,                 0,     0  }
@@ -71,9 +69,6 @@ int main(int argc, char **argv) {
         return 0;
       case 'D':
         device = strdup(optarg);
-        break;
-      case 'm':
-        mmap = TRUE;
         break;
       case 'v':
         verbose = TRUE;
@@ -338,7 +333,7 @@ static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
     return err;
   }
 
-  err = snd_pcm_hw_params_set_access(handle, hwparams, mmap ? SND_PCM_ACCESS_MMAP_INTERLEAVED : SND_PCM_ACCESS_RW_INTERLEAVED);
+  err = snd_pcm_hw_params_set_access(handle, hwparams, SND_PCM_ACCESS_MMAP_INTERLEAVED);
 
   if (err < 0) {
     fprintf(stderr, "Access type is not applicable: %s\n", snd_strerror(err));
@@ -589,10 +584,9 @@ static int direct_uchar(snd_pcm_t *handle) {
 }
 
 static void usage(void) {
-  printf("Usage: ./_wave_rw_play_uchar [options] ... [sound file] ...\n");
+  printf("Usage: ./wave_direct_play_uchar [options] ... [sound file] ...\n");
   printf("-h, --help                usage\n");
   printf("-D, --device=devicename   playback device\n");
-  printf("-m, --mmap                mmap_write transfer\n");
   printf("-v, --verbose             show parameters\n");
   printf("-n, --noresample          prohibit resample\n\n");
 
