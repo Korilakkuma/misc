@@ -10,8 +10,6 @@
 #include <alsa/asoundlib.h>
 #include "WaveFormat.h"
 
-#define _FILE_OFFSET_BITS 64
-
 typedef enum {
   FALSE,
   TRUE
@@ -25,10 +23,10 @@ static void usage(void);
 
 static char *device = "plughw:0,0";
 static snd_pcm_format_t format = SND_PCM_FORMAT_S32_LE;
-static unsigned int rate = 44100;
-static unsigned int number_of_channels = 1;
-static unsigned int buffer_time = 0;
-static unsigned int period_time = 0;
+static DWORD rate = 44100;
+static DWORD channels = 1;
+static DWORD buffer_time = 0;
+static DWORD period_time = 0;
 static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
@@ -56,7 +54,7 @@ int main(int argc, char **argv) {
   snd_pcm_hw_params_t *hwparams;
   snd_pcm_sw_params_t *swparams;
 
-  unsigned short qbits;
+  WORD qbits;
   double play_time = 0.0;
   int c;
   int err;
@@ -115,15 +113,15 @@ int main(int argc, char **argv) {
     goto clean;
   }
 
-  number_of_channels = (unsigned int)fmt_desc.number_of_channels;
-  rate               = fmt_desc.samples_per_sec;
-  qbits              = fmt_desc.bits_per_sample;
-  play_time          = (double)file_desc.frame_size / (double)rate;
+  channels  = (DWORD)fmt_desc.number_of_channels;
+  rate      = fmt_desc.samples_per_sec;
+  qbits     = fmt_desc.bits_per_sample;
+  play_time = (double)file_desc.frame_size / (double)rate;
 
   printf("=== WAVE file info ===\n");
   printf("Filename: %s\n", file_path);
   printf("Sample Rate: %d Hz\n", rate);
-  printf("Number of Channels: %d channels\n", number_of_channels);
+  printf("Number of Channels: %d channels\n", channels);
 
   switch (qbits) {
     case 16:
@@ -306,6 +304,7 @@ static int wave_read_header(void) {
       }
     } else if (chunk_id == *(FOURCC *)DATA_ID) {
       file_desc.frame_size = (long)chunk_size / (long)fmt_desc.data_frame_size;
+      break;
     } else {
       lseek(file_desc.fd, (off_t)chunk_size, SEEK_CUR);
     }
@@ -355,14 +354,14 @@ static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
     return err;
   }
 
-  err = snd_pcm_hw_params_set_channels(handle, hwparams, number_of_channels);
+  err = snd_pcm_hw_params_set_channels(handle, hwparams, channels);
 
   if (err < 0) {
-    fprintf(stderr, "The number of channels (%i) is not applicable: %s\n", number_of_channels, snd_strerror(err));
+    fprintf(stderr, "The number of channels (%i) is not applicable: %s\n", channels, snd_strerror(err));
     return err;
   }
 
-  rate_near = rate;
+  rate_near = (unsigned int)rate;
 
   err = snd_pcm_hw_params_set_rate_near(handle, hwparams, &rate_near, 0);
 
@@ -470,25 +469,23 @@ static int direct_uchar(snd_pcm_t *handle) {
   snd_pcm_sframes_t avail;
   snd_pcm_sframes_t transfer_frames;
 
-  unsigned short frame_bytes = fmt_desc.data_frame_size;
+  BYTE *frame_block;
+  BYTE *mmap[4];
 
-  const long number_of_sound_frames = file_desc.frame_size;
+  const long total_frames = file_desc.frame_size;
+  const WORD frame_bytes  = fmt_desc.data_frame_size;
 
-  long number_of_frames          = 0;
-  long number_of_playback_frames = 0;
+  // HACK:
+  period_size = total_frames;
 
-  long read_frames;
-  long rest_frames = number_of_sound_frames;
+  long number_of_frames = (long)period_size;
+  long playback_frames  = 0;
+  long rest_frames      = total_frames;
 
-  unsigned int steps;
-  unsigned char *frame_block;
-  unsigned char *mmap[4];
+  BOOL can_start = TRUE;
 
-  int to_start = 1;
-  int i        = 0;
-  int err      = 0;
-
-  number_of_frames = (long)period_size;
+  int i   = 0;
+  int err = 0;
 
   while (rest_frames > 0) {
     avail = snd_pcm_avail_update(handle);
@@ -499,13 +496,13 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      to_start = 1;
+      can_start = TRUE;
       continue;
     }
 
     if (avail < number_of_frames) {
-      if (to_start) {
-        to_start = 0;
+      if (can_start) {
+        can_start = FALSE;
 
         err = snd_pcm_start(handle);
 
@@ -522,7 +519,7 @@ static int direct_uchar(snd_pcm_t *handle) {
             return err;
           }
 
-          to_start = 1;
+          can_start = TRUE;
         }
       }
 
@@ -539,20 +536,17 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      to_start = 1;
+      can_start = TRUE;
     }
 
     if (i < 4) {
-      mmap[i] = (unsigned char *)(areas->addr + (areas->first / 8));
-
-      steps = areas->step / 8;
-
-      mmap[i] += (unsigned int)(offset * steps);
+      mmap[i]  = (BYTE *)(areas->addr + (areas->first / 8));
+      mmap[i] += (DWORD)(offset * (areas->step / 8));
     }
 
     frame_block = mmap[i % 4];
 
-    read_frames = (long)read(file_desc.fd, frame_block, (size_t)((frames * frame_bytes) / frame_bytes));
+    long read_frames = (long)read(file_desc.fd, frame_block, (size_t)((frames * frame_bytes) / frame_bytes));
 
     if (read_frames == -1) {
       return read_frames;
@@ -566,19 +560,21 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      to_start = 1;
+      can_start = TRUE;
     }
 
-    number_of_playback_frames += (long)transfer_frames;
+    playback_frames += (long)transfer_frames;
 
-    if ((rest_frames = (number_of_sound_frames - number_of_playback_frames) <= (long)period_size)) {
+    rest_frames = total_frames - playback_frames;
+
+    if (rest_frames <= (long)period_size) {
       number_of_frames = rest_frames;
     }
 
     i++;
   }
 
-  printf("%lu frames\n", number_of_playback_frames);
+  printf("Summary: %lu frame played\n", playback_frames);
 
   return 0;
 }
