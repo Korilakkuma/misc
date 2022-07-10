@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <getopt.h>
 #include <alsa/asoundlib.h>
 #include <sndfile.h>
-
-typedef enum {
-  FALSE,
-  TRUE
-} BOOL;
 
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
 static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams);
@@ -29,9 +25,9 @@ static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
 
-static BOOL mmap     = FALSE;
-static BOOL verbose  = FALSE;
-static BOOL resample = TRUE;
+static bool mmap     = false;
+static bool verbose  = false;
+static bool resample = true;
 
 int main(int argc, char **argv) {
   const char *optstring = "hD:mvn";
@@ -67,13 +63,13 @@ int main(int argc, char **argv) {
         device = strdup(optarg);
         break;
       case 'm':
-        mmap = TRUE;
+        mmap = true;
         break;
       case 'v':
-        verbose = TRUE;
+        verbose = true;
         break;
       case 'n':
-        resample = FALSE;
+        resample = false;
         break;
       default:
         break;

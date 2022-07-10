@@ -1,14 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <getopt.h>
 #include <alsa/asoundlib.h>
 #include <FLAC/stream_decoder.h>
 #include <FLAC/metadata.h>
-
-typedef enum {
-  FALSE,
-  TRUE
-} BOOL;
 
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
 static int set_swparams(snd_pcm_t *handle, snd_pcm_sw_params_t *swparams);
@@ -34,9 +30,9 @@ static void usage(void);
 
 static snd_pcm_sframes_t (*writei_func)(snd_pcm_t *handle, const void *buffer, snd_pcm_uframes_t size);
 
-static BOOL mmap     = FALSE;
-static BOOL verbose  = FALSE;
-static BOOL resample = TRUE;
+static bool mmap     = false;
+static bool verbose  = false;
+static bool resample = true;
 
 typedef struct {
   FLAC__StreamDecoder *decoder;
@@ -85,13 +81,13 @@ int main(int argc, char **argv) {
         device = strdup(optarg);
         break;
       case 'm':
-        mmap = TRUE;
+        mmap = true;
         break;
       case 'v':
-        verbose = TRUE;
+        verbose = true;
         break;
       case 'n':
-        resample = FALSE;
+        resample = false;
         break;
       default:
         break;

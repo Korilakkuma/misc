@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -8,11 +9,6 @@
 #include <errno.h>
 #include <alsa/asoundlib.h>
 #include "WaveFormat.h"
-
-typedef enum {
-  FALSE,
-  TRUE
-} BOOL;
 
 static int wave_read_header(void);
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
@@ -31,9 +27,9 @@ static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
 
-static BOOL mmap     = FALSE;
-static BOOL verbose  = FALSE;
-static BOOL resample = TRUE;
+static bool mmap     = false;
+static bool verbose  = false;
+static bool resample = true;
 
 static WAVEFormatDesc fmt_desc;
 static WAVEFileDesc file_desc;
@@ -72,13 +68,13 @@ int main(int argc, char **argv) {
         device = strdup(optarg);
         break;
       case 'm':
-        mmap = TRUE;
+        mmap = true;
         break;
       case 'v':
-        verbose = TRUE;
+        verbose = true;
         break;
       case 'n':
-        resample = FALSE;
+        resample = false;
         break;
       default:
         break;
@@ -254,7 +250,7 @@ static int wave_read_header(void) {
     exit(EXIT_FAILURE);
   }
 
-  while (TRUE) {
+  while (true) {
     s = read(file_desc.fd, &chunk_id, sizeof(FOURCC));
 
     if (s == -1) {

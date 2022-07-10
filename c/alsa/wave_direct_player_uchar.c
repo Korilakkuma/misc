@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -9,11 +10,6 @@
 #include <errno.h>
 #include <alsa/asoundlib.h>
 #include "WaveFormat.h"
-
-typedef enum {
-  FALSE,
-  TRUE
-} BOOL;
 
 static int wave_read_header(void);
 static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams);
@@ -31,8 +27,8 @@ static snd_pcm_uframes_t buffer_size = 0;
 static snd_pcm_uframes_t period_size = 0;
 static snd_output_t *output = NULL;
 
-static BOOL verbose  = FALSE;
-static BOOL resample = TRUE;
+static bool verbose  = false;
+static bool resample = true;
 
 static WAVEFormatDesc fmt_desc;
 static WAVEFileDesc file_desc;
@@ -69,10 +65,10 @@ int main(int argc, char **argv) {
         device = strdup(optarg);
         break;
       case 'v':
-        verbose = TRUE;
+        verbose = true;
         break;
       case 'n':
-        resample = FALSE;
+        resample = false;
         break;
       default:
         fprintf(stderr, "`--help` confirm usage\n");
@@ -244,7 +240,7 @@ static int wave_read_header(void) {
     exit(EXIT_FAILURE);
   }
 
-  while (TRUE) {
+  while (true) {
     s = read(file_desc.fd, &chunk_id, sizeof(FOURCC));
 
     if (s == -1) {
@@ -482,7 +478,7 @@ static int direct_uchar(snd_pcm_t *handle) {
   long playback_frames  = 0;
   long rest_frames      = total_frames;
 
-  BOOL can_start = TRUE;
+  bool can_start = true;
 
   int i   = 0;
   int err = 0;
@@ -496,13 +492,13 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      can_start = TRUE;
+      can_start = true;
       continue;
     }
 
     if (avail < number_of_frames) {
       if (can_start) {
-        can_start = FALSE;
+        can_start = false;
 
         err = snd_pcm_start(handle);
 
@@ -519,7 +515,7 @@ static int direct_uchar(snd_pcm_t *handle) {
             return err;
           }
 
-          can_start = TRUE;
+          can_start = true;
         }
       }
 
@@ -536,7 +532,7 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      can_start = TRUE;
+      can_start = true;
     }
 
     if (i < 4) {
@@ -560,7 +556,7 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      can_start = TRUE;
+      can_start = true;
     }
 
     playback_frames += (long)transfer_frames;
