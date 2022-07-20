@@ -20,7 +20,7 @@ static void usage(void);
 int main(int argc, char **argv) {
   const char *optstring = "hf:r:b:";
 
-  const struct option long_option[] = {
+  static const struct option long_option[] = {
     { "help",   no_argument,       NULL, 'h' },
     { "format", required_argument, NULL, 'f' },
     { "rate",   required_argument, NULL, 'r' },

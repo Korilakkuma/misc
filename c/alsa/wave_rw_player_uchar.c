@@ -37,7 +37,7 @@ static WAVEFileDesc file_desc;
 int main(int argc, char **argv) {
   const char *optstring = "hD:mvn";
 
-  const struct option long_option[] = {
+  static const struct option long_option[] = {
     { "help",       no_argument,       NULL, 'h' },
     { "device",     required_argument, NULL, 'D' },
     { "mmap",       no_argument,       NULL, 'm' },
