@@ -34,7 +34,7 @@ static WAVEFormatDesc fmt_desc;
 static WAVEFileDesc file_desc;
 
 int main(int argc, char **argv) {
-  const char *optstring = "hD:mvn";
+  static const char *optstring = "hD:mvn";
 
   static const struct option long_option[] = {
     { "help",       no_argument,       NULL, 'h' },

@@ -30,7 +30,7 @@ static bool verbose  = false;
 static bool resample = true;
 
 int main(int argc, char **argv) {
-  const char *optstring = "hD:mvn";
+  static const char *optstring = "hD:mvn";
 
   static const struct option long_option[] = {
     { "help",       no_argument,       NULL, 'h' },

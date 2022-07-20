@@ -18,7 +18,7 @@ static double end      = 1.0e-4;
 static void usage(void);
 
 int main(int argc, char **argv) {
-  const char *optstring = "hf:r:b:";
+  static const char *optstring = "hf:r:b:";
 
   static const struct option long_option[] = {
     { "help",   no_argument,       NULL, 'h' },
