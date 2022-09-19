@@ -81,7 +81,8 @@ int main(int argc, char **argv) {
 
         break;
       default:
-        break;
+        fprintf(stderr, "`--help` confirm usage\n");
+        exit(EXIT_FAILURE);
     }
   }
 
