@@ -1,0 +1,37 @@
+ISORT	START
+		LAD	GR1,1
+
+OUTER	CPA	GR1,N		; i < N
+		JPL	DONE
+		JZE	DONE
+		LAD	GR2,0,GR1	; int j = i
+
+INNER	CPA	GR2,=0		; j > 0
+		JMI	NEXT
+		JZE	NEXT
+
+		LAD	GR3,-1,GR2	; j - 1
+		LD	GR0,A,GR3	; a[j - 1]
+		CPA	GR0,A,GR2	; a[j - 1] > a[j]
+		JMI	NEXT
+		JZE	NEXT
+
+		; swap(a[j], a[j - 1])
+		LD	GR0,A,GR2	; int tmp = a[j]
+		LAD	GR3,-1,GR2	; j - 1;
+		LD	GR4,A,GR3	; a[j] = a[j - 1]
+		ST	GR4,A,GR2
+		ST	GR0,A,GR3	; a[j - 1] = tmp;
+
+		LAD	GR2,-1,GR2	; j--;
+		JUMP	INNER
+
+NEXT	LAD	GR1,1,GR1	; i++;
+		JUMP	OUTER
+
+DONE	RET
+
+A		DC	5,3,4,1,2	; int a[] = { 5, 3, 4, 1, 2 };
+N		DC	5			; #define N 5
+
+		END
