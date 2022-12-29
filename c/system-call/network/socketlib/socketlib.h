@@ -9,6 +9,6 @@
 
 extern int setup_server(in_port_t port);
 extern int setup_client(char *hostname, in_port_t port);
-extern int mserver_socket(in_port_t port, int num);
-extern int mserver_maccept(int sock, int limit, void (*callback)(void));
+extern int setup_multiple_server(in_port_t port, int queue_size);
+extern int multiple_accept(int socket_for_waiting, int limit, void (*callback)(int n, int sock));
 extern char *trim_newline(char *str, int len);

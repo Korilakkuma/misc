@@ -1,6 +1,6 @@
 CC          = gcc
 CFLAGS      = -std=c99 -O2 -Wall
-OBJS        = setup_server.o setup_client.o trim_newline.o
+OBJS        = setup_server.o setup_client.o setup_multiple_server.o trim_newline.o
 AR          = ar -qc
 
 all         : socketlib.a
