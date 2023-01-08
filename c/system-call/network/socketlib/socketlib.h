@@ -7,6 +7,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#define HOSTNAME_LENGTH 64
+
 extern int setup_server(in_port_t port);
 extern int setup_client(char *hostname, in_port_t port);
 extern int setup_multiple_server(in_port_t port, int queue_size);
