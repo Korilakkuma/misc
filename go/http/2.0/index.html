@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Server-Sent Events Client</title>
+  </head>
+  <body>
+    <script>
+      let ul = null;
+
+      const sse = new EventSource('/sse');
+
+      sse.onopen = () => {
+        ul = document.createElement('ul');
+
+        document.body.insertBefore(ul, document.body.lastElementChild);
+      };
+
+      sse.onmessage = (event) => {
+        if (ul === null) {
+          return;
+        }
+
+        const data = JSON.parse(event.data);
+
+        const li   = document.createElement('li');
+        const text = document.createTextNode(`${data.id}: ${data.number}`);
+
+        li.appendChild(text);
+        ul.appendChild(li);
+      };
+
+      sse.addEventListener('ping', (event) => {
+        if (ul === null) {
+          return;
+        }
+
+        const data = JSON.parse(event.data);
+
+        const li   = document.createElement('li');
+        const text = document.createTextNode(`${event.type} > ${data.id}: ${data.number}`);
+
+        li.appendChild(text);
+        ul.appendChild(li);
+      });
+    </script>
+  </body>
+</html>
