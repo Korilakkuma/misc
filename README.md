@@ -24,6 +24,16 @@ $ sudo apt -y install libsndfile1-dev
 
 https://www.officedaytime.com/dcaslj/
 
+
+### Install packages for Go
+
+```bach
+$ go env -w GO111MODULE=on
+$ cd go
+$ go mod init http  # target directory
+$ go mod tidy
+```
+
 ### Create certificates for TLS
 
 ```bash
