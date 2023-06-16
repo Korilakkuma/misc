@@ -1,3 +1,5 @@
+//  node --print-bytecode --print-bytecode-filter=bytecodeTest bytecode.js
+
 function bytecodeTest() {
   let x = 0;
 
