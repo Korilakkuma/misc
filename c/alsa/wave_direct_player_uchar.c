@@ -471,9 +471,6 @@ static int direct_uchar(snd_pcm_t *handle) {
   const long total_frames = file_desc.frame_size;
   const WORD frame_bytes  = fmt_desc.data_frame_size;
 
-  // HACK:
-  period_size = total_frames;
-
   long number_of_frames = (long)period_size;
   long playback_frames  = 0;
   long rest_frames      = total_frames;
@@ -542,7 +539,7 @@ static int direct_uchar(snd_pcm_t *handle) {
 
     frame_block = mmap[i % 4];
 
-    long read_frames = (long)read(file_desc.fd, frame_block, (size_t)((frames * frame_bytes) / frame_bytes));
+    long read_frames = (long)(read(file_desc.fd, frame_block, (size_t)(frames * frame_bytes)) / frame_bytes);
 
     if (read_frames == -1) {
       return read_frames;
