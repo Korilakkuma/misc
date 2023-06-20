@@ -475,7 +475,7 @@ static int direct_uchar(snd_pcm_t *handle) {
   long playback_frames  = 0;
   long rest_frames      = total_frames;
 
-  bool can_start = true;
+  bool waiting = false;
 
   int i   = 0;
   int err = 0;
@@ -489,21 +489,12 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      can_start = true;
+      waiting = false;
       continue;
     }
 
     if (avail < number_of_frames) {
-      if (can_start) {
-        can_start = false;
-
-        err = snd_pcm_start(handle);
-
-        if (err < 0) {
-          fprintf(stderr, "Starting PCM is failed: %s\n", snd_strerror(err));
-          return err;
-        }
-      } else {
+      if (waiting) {
         err = snd_pcm_wait(handle, -1);
 
         if (err < 0) {
@@ -512,7 +503,16 @@ static int direct_uchar(snd_pcm_t *handle) {
             return err;
           }
 
-          can_start = true;
+          waiting = false;
+        }
+      } else {
+        waiting = true;
+
+        err = snd_pcm_start(handle);
+
+        if (err < 0) {
+          fprintf(stderr, "Starting PCM is failed: %s\n", snd_strerror(err));
+          return err;
         }
       }
 
@@ -529,7 +529,7 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      can_start = true;
+      waiting = false;
     }
 
     if (i < 4) {
@@ -553,7 +553,7 @@ static int direct_uchar(snd_pcm_t *handle) {
         return err;
       }
 
-      can_start = true;
+      waiting = false;
     }
 
     playback_frames += (long)transfer_frames;
