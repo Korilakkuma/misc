@@ -341,7 +341,7 @@ static int set_hwparams(snd_pcm_t *handle, snd_pcm_hw_params_t *hwparams) {
     fprintf(stderr, "Sample format is not applicable: %s\n", snd_strerror(err));
     fprintf(stderr, "Applicable formats\n");
 
-    for (int fmt = 0; fmt < SND_PCM_FORMAT_LAST; fmt++) {
+    for (int fmt = 0; fmt <= SND_PCM_FORMAT_LAST; fmt++) {
       if (snd_pcm_hw_params_test_format(handle, hwparams, (snd_pcm_format_t)fmt) == 0) {
         fprintf(stderr, "- %s\n", snd_pcm_format_name((snd_pcm_format_t)fmt));
       }
