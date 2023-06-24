@@ -533,8 +533,8 @@ static int direct_uchar(snd_pcm_t *handle) {
     }
 
     if (i < 4) {
-      mmap[i]  = (BYTE *)(areas->addr + (areas->first / 8));
-      mmap[i] += (DWORD)(offset * (areas->step / 8));
+      mmap[i]  = (BYTE *)areas->addr + (areas->first / 8);
+      mmap[i] += (DWORD)offset * (areas->step / 8);
     }
 
     frame_block = mmap[i % 4];
