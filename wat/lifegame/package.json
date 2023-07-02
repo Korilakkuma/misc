@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "clean": "rm -rf *.wasm",
+    "build": "wat2wasm lifegame.wat",
+    "start": "node server.js"
+  },
+  "devDependencies": {
+    "connect": "^3.7.0",
+    "serve-static": "^1.15.0",
+    "wat2wasm": "^3.0.0"
+  }
+}
