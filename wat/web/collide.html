@@ -103,10 +103,10 @@
           WebAssembly
             .instantiateStreaming(fetch('./collide.wasm'), importObject)
             .then(({ instance }) => {
-              const lifegame = instance.exports.LifeGame;
+              const collide = instance.exports.collide;
 
               const animate = () => {
-                lifegame();
+                collide();
                 context.putImageData(imagedata, 0, 0);
                 animationId = requestAnimationFrame(animate);
               };
