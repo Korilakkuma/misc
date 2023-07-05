@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Game of Life by C with Emscripten</title>
+    <link rel="stylesheet" href="./lifegame.css" media="all" />
+  </head>
+  <body>
+    <main>
+      <canvas id="canvas" width="512" height="512"></canvas>
+      <ul>
+        <li><label><span>Auto Running</span><input type="checkbox" id="checkbox-autorunning" /></label></li>
+        <li><button type="button" id="button-step">Step</button></li>
+        <li><button type="button" id="button-benchmark">Benchmark</button><span id="result-benchmark"></span></li>
+      </ul>
+    </main>
+    <script src="./lifegame.js"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "clean": "rm -rf *.wasm",
+    "build": "emcc -O1 -Wall --no-entry -o lifegame.wasm lifegame.c",
+    "build:prod": "emcc -O3 -Wall --no-entry -o lifegame.wasm lifegame.c",
+    "start": "node server.js"
+  },
+  "devDependencies": {
+    "connect": "^3.7.0",
+    "serve-static": "^1.15.0"
+  }
+}
