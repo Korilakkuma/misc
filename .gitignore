@@ -3,6 +3,10 @@ node_modules/
 
 *.log
 
+# `indent` command generates
+*~
+*.BAK
+
 *.a
 *.o
 *.wasm
