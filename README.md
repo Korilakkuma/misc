@@ -24,6 +24,17 @@ $ sudo apt -y install libsndfile1-dev
 
 https://www.officedaytime.com/dcaslj/
 
+### emsdk (Emscripten)
+
+```bash
+$ git clone https://github.com/emscripten-core/emsdk.git
+$ cd emsdk
+$ ./emsdk install latest  # Use `./emsdk install sdk-upstream-main-64bit` in case of Apple Silicon
+$ ./emsdk activate latest # Use `./emsdk activate sdk-upstream-main-64bit` in case of Apple Silicon
+$ source ./emsdk_env.sh
+
+# if error occurred, execute `softwareupdate --install-rosetta`, then retry
+```
 
 ### Install packages for Go
 
