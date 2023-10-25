@@ -63,3 +63,31 @@ float *sawtooth(const int N, const int K) {
 
   return fourier_series;
 }
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+float *triangle(const int N, const int K) {
+  if (fourier_series) {
+    free(fourier_series);
+  }
+
+  fourier_series = (float *)calloc(N, sizeof(float));
+
+  for (int n = 0; n < N; n++) {
+    fourier_series[n] = M_PI / 2.0f;
+
+    for (int k = 1; k < K; k++) {
+      float x = n / RESOLUTION;
+
+      // f(x) = (1 / 2)|x| (-M_PI < x < M_PI)
+      //
+      // (M_PI / 2) += (1 / 2) * (((2 * ((-1)^(k) - 1)) / (k^2 * M_PI)) * coskx)
+      fourier_series[n] += (1.0f / 2.0f) * ((2.0f * (powf(-1.0f, (float)k) - 1.0f) / (powf((float)k, 2.0f) * M_PI)) * cosf((float)k * x));
+    }
+
+    fourier_series[n] -= (M_PI / 2.0f);
+  }
+
+  return fourier_series;
+}
