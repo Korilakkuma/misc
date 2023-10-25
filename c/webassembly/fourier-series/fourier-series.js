@@ -59,15 +59,32 @@ WebAssembly
     const clearButtonElement     = document.getElementById('button-clear');
     const animationButtonElement = document.getElementById('button-animation');
     const intervalSelectElement  = document.getElementById('select-interval');
+    const functionSelectElement  = document.getElementById('select-function');
     const rangeElement           = document.getElementById('range-sum');
     const outputTextElement      = document.getElementById('output-sum');
 
     const linearMemory = instance.exports.memory.buffer;
 
     const createTypedArrayFromLinearMemory = (linearMemory, k) => {
-      const offset = instance.exports.square(N, k);
+      switch (functionSelectElement.value) {
+        case 'square': {
+          const offset = instance.exports.square(N, k);
 
-      return new Float32Array(linearMemory, offset, N);
+          return new Float32Array(linearMemory, offset, N);
+        }
+
+        case 'sawtooth': {
+          const offset = instance.exports.sawtooth(N, k);
+
+          return new Float32Array(linearMemory, offset, N);
+        }
+
+        case 'triangle': {
+          const offset = instance.exports.triangle(N, k);
+
+          return new Float32Array(linearMemory, offset, N);
+        }
+      }
     };
 
     let K = rangeElement.valueAsNumber;
@@ -98,6 +115,7 @@ WebAssembly
         plotButtonElement.removeAttribute('disabled');
         animationButtonElement.removeAttribute('disabled');
         intervalSelectElement.removeAttribute('disabled');
+        functionSelectElement.removeAttribute('disabled');
         rangeElement.removeAttribute('disabled');
       }
     }, false);
@@ -106,6 +124,7 @@ WebAssembly
       plotButtonElement.setAttribute('disabled', 'disabled');
       animationButtonElement.setAttribute('disabled', 'disabled');
       intervalSelectElement.setAttribute('disabled', 'disabled');
+      functionSelectElement.setAttribute('disabled', 'disabled');
       rangeElement.setAttribute('disabled', 'disabled');
 
       K = 1;
@@ -134,6 +153,7 @@ WebAssembly
           plotButtonElement.removeAttribute('disabled');
           animationButtonElement.removeAttribute('disabled');
           intervalSelectElement.removeAttribute('disabled');
+          functionSelectElement.removeAttribute('disabled');
           rangeElement.removeAttribute('disabled');
           return;
         }
