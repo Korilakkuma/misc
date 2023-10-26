@@ -84,6 +84,27 @@ WebAssembly
 
           return new Float32Array(linearMemory, offset, N);
         }
+
+        default: {
+          const sinc = new Float32Array(N);
+
+          const RESOLUTION = 3000;
+
+          const offset = Math.trunc(N / 2);
+
+          for (let n = -offset; n < offset; n++) {
+            const x = n / RESOLUTION;
+
+            if (n === 0) {
+              sinc[offset] = 1;
+              continue;
+            }
+
+            sinc[offset + n] = Math.sin(Math.PI * x) / (Math.PI * x);
+          }
+
+          return sinc;
+        }
       }
     };
 
@@ -182,6 +203,18 @@ WebAssembly
 
     rangeElement.addEventListener('change', (event) => {
       plotSeries(canvas, context, createTypedArrayFromLinearMemory(linearMemory, K));
+    }, false);
+
+    functionSelectElement.addEventListener('change', (event) => {
+      if (event.currentTarget.value === 'sinc') {
+        animationButtonElement.setAttribute('disabled', 'disabled');
+        intervalSelectElement.setAttribute('disabled', 'disabled');
+        rangeElement.setAttribute('disabled', 'disabled');
+      } else {
+        animationButtonElement.removeAttribute('disabled');
+        intervalSelectElement.removeAttribute('disabled');
+        rangeElement.removeAttribute('disabled');
+      }
     }, false);
   })
   .catch(console.error);
