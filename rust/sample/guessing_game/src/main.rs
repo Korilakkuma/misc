@@ -11,20 +11,25 @@ fn main() {
 
     println!("Type number > ");
 
-    let mut guess_string = String::new();
+    loop {
+        let mut guess_string = String::new();
 
-    io::stdin()
-        .read_line(&mut guess_string)
-        .expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut guess_string)
+            .expect("Failed to read line");
 
-    let guess: u32 = guess_string.trim().parse()
-        .expect("Type a number > ");
+        let guess: u32 = guess_string.trim().parse()
+            .expect("Type a number > ");
 
-    println!("guessed: {}", guess);
+        println!("guessed: {}", guess);
 
-    match guess.cmp(&secret_number) {
-        Ordering::Less => println!("Small < {}", secret_number),
-        Ordering::Greater => println!("Big > {}", secret_number),
-        Ordering::Equal => println!("Equal == {}", secret_number)
+        match guess.cmp(&secret_number) {
+            Ordering::Less => println!("Small < {}", secret_number),
+            Ordering::Greater => println!("Big > {}", secret_number),
+            Ordering::Equal => {
+                println!("Equal == {}", secret_number);
+                break;
+            }
+        }
     }
 }
