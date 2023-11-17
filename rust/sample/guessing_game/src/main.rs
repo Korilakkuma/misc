@@ -18,8 +18,13 @@ fn main() {
             .read_line(&mut guess_string)
             .expect("Failed to read line");
 
-        let guess: u32 = guess_string.trim().parse()
-            .expect("Type a number > ");
+        let guess: u32 = match guess_string.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("Type number > ");
+                continue;
+            }
+        };
 
         println!("guessed: {}", guess);
 
