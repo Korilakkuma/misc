@@ -1,0 +1,6 @@
+#define PUSH 0x70
+
+#define ADD 0x71
+#define SUB 0x72
+#define MUL 0x73
+#define DIV 0x74
