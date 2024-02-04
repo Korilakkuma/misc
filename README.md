@@ -1,7 +1,6 @@
-miscellaneous programs
-======
+# miscellaneous programs
 
-### Setup Web Server
+## Setup Web Server
 
 If use WebAssembly, the following web server sends `application/wasm` as a correct response.
 
@@ -9,7 +8,7 @@ If use WebAssembly, the following web server sends `application/wasm` as a corre
 $ python3 server.py
 ```
 
-### ALSA
+## ALSA
 
 Install ALSA libraries on Ubuntu (or others Linux distributions).
 
@@ -20,11 +19,11 @@ $ sudo apt -y install libfltk1.3-dev
 $ sudo apt -y install libsndfile1-dev
 ```
 
-### CASL Ⅱ Online Simulator
+## CASL Ⅱ Online Simulator
 
 https://www.officedaytime.com/dcaslj/
 
-### emsdk (Emscripten)
+## emsdk (Emscripten)
 
 ```bash
 $ git clone https://github.com/emscripten-core/emsdk.git
@@ -36,7 +35,7 @@ $ source ./emsdk_env.sh
 # if error occurred, execute `softwareupdate --install-rosetta`, then retry
 ```
 
-### Install packages for Go
+## Install packages for Go
 
 ```bach
 $ go env -w GO111MODULE=on
@@ -45,7 +44,7 @@ $ go mod init http  # target directory
 $ go mod tidy
 ```
 
-### Create certificates for TLS
+## Create certificates for TLS
 
 ```bash
 $ cp /etc/ssl/openssl.cnf ./  # if macOS
