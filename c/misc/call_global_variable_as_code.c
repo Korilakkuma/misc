@@ -1,0 +1,1 @@
+char main[] = "\xf0\x0f\xc7\xc8";
