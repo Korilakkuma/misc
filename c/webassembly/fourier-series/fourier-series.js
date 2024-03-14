@@ -85,6 +85,12 @@ WebAssembly
           return new Float32Array(linearMemory, offset, N);
         }
 
+        case 'delta': {
+          const offset = instance.exports.delta(N, k);
+
+          return new Float32Array(linearMemory, offset, N);
+        }
+
         default: {
           const sinc = new Float32Array(N);
 
