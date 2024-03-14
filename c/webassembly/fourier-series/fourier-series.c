@@ -91,3 +91,27 @@ float *triangle(const int N, const int K) {
 
   return fourier_series;
 }
+
+#ifdef __EMSCRIPTEN__
+EMSCRIPTEN_KEEPALIVE
+#endif
+float *delta(const int N, const int K) {
+  if (fourier_series) {
+    free(fourier_series);
+  }
+
+  fourier_series = (float *)calloc(N, sizeof(float));
+
+  for (int n = 0; n < N; n++) {
+    fourier_series[n] = 1.0f / (2.0f * M_PI);
+
+    float x = n / RESOLUTION;
+
+    for (int k = 1; k < K; k++) {
+      // (1 / 2 * M_PI) + (1_/ M_PI) * coskx
+      fourier_series[n] += (1 / M_PI) * cosf(k * x);
+    }
+  }
+
+  return fourier_series;
+}
