@@ -20,28 +20,22 @@ static std::vector<Status> columns(N);
 static std::vector<Status> downs((2 * N) - 1);
 static std::vector<Status> ups((2 * N) - 1);
 
-static Result backtracking(INT row);
+static void backtracking(INT row);
 
 static void init_board();
 static void print_board();
 
+static INT number_of_solutions = 0;
+
 int main(int argc, char **argv) {
   init_board();
-
-  if (backtracking(0) == Result::SUCCESS) {
-    print_board();
-  } else {
-    std::cerr << "No solution." << std::endl;
-  }
+  backtracking(0);
 
   return 0;
 }
 
-static Result backtracking(INT row) {
+static void backtracking(INT row) {
   for (INT col = 0; col < N; col++) {
-    std::cout << "row   : " << row << std::endl;
-    std::cout << "column: " << col << std::endl;
-
     INT down = row - col + (N - 1);
     INT up   = row + col;
 
@@ -52,11 +46,9 @@ static Result backtracking(INT row) {
       ups[up]        = Status::USED;
 
       if ((row + 1) >= N) {
-        return Result::SUCCESS;
-      }
-
-      if (backtracking(row + 1) == Result::SUCCESS) {
-        return Result::SUCCESS;
+        print_board();
+      } else {
+        backtracking(row + 1);
       }
 
       positions[row] = -1;
@@ -65,8 +57,6 @@ static Result backtracking(INT row) {
       ups[up]        = Status::FREE;
     }
   }
-
-  return Result::FAIL;
 }
 
 static void init_board() {
@@ -85,6 +75,8 @@ static void init_board() {
 }
 
 static void print_board() {
+  std::cout << number_of_solutions++ << std::endl;
+
   for (INT i = 0; i < N; i++) {
     for (INT j = 0; j < N; j++) {
       if (positions[i] == j) {
