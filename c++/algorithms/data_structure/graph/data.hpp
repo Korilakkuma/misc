@@ -23,3 +23,15 @@ static std::vector<std::vector<INT>> data = {
 };
 
 Graph graph(data.size());
+
+Graph &createDirectedGraph(void) {
+  INT M = data.size();
+
+  for (INT i = 0; i < M; i++) {
+    std::vector<INT> vertices = data[i];
+
+    graph[vertices[0]].push_back(vertices[1]);
+  }
+
+  return graph;
+}
