@@ -35,3 +35,16 @@ Graph &createDirectedGraph(void) {
 
   return graph;
 }
+
+Graph &createUndirectedGraph(void) {
+  INT M = data.size();
+
+  for (INT i = 0; i < M; i++) {
+    std::vector<INT> vertices = data[i];
+
+    graph[vertices[0]].push_back(vertices[1]);
+    graph[vertices[1]].push_back(vertices[0]);
+  }
+
+  return graph;
+}
