@@ -4,7 +4,14 @@
 
 using INT = long long;
 
+struct Edge {
+  INT to;
+  INT weight;
+  Edge(INT to, INT weight) : to(to), weight(weight) {}
+};
+
 using Graph = std::vector<std::vector<INT>>;
+using WeightedGraph = std::vector<std::vector<Edge>>;
 
 static std::vector<std::vector<INT>> data = {
   { 8, 13 },
@@ -23,6 +30,7 @@ static std::vector<std::vector<INT>> data = {
 };
 
 Graph graph(data.size());
+WeightedGraph weighted_graph(data.size());
 
 Graph &createDirectedGraph(void) {
   INT M = data.size();
