@@ -32,6 +32,10 @@ static std::vector<std::vector<INT>> data = {
 Graph graph(data.size());
 WeightedGraph weighted_graph(data.size());
 
+INT generate_random_value(INT max) {
+  return (std::rand() * max) / (RAND_MAX + 1.0);
+}
+
 Graph &createDirectedGraph(void) {
   INT M = data.size();
 
