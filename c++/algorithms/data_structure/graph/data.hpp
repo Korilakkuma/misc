@@ -60,3 +60,16 @@ Graph &createUndirectedGraph(void) {
 
   return graph;
 }
+
+WeightedGraph &createWeightedDirectedGraph(void) {
+  INT M = data.size();
+
+  for (INT i = 0; i < M; i++) {
+    std::vector<INT> vertices = data[i];
+    INT weight = generate_random_value(10);
+
+    weighted_graph[vertices[0]].push_back(Edge(vertices[1], weight));
+  }
+
+  return weighted_graph;
+}
