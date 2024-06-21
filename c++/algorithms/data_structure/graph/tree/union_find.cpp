@@ -62,5 +62,15 @@ int main(int argc, char **argv) {
 
   std::cout << "issame(2, 5): " << (union_find.issame(2, 5) ? "true" : "false") << std::endl;
 
+  INT number_of_connected_components = 0;
+
+  for (INT i = 0; i < 7; i++) {
+    if (union_find.root(i) == i) {
+      ++number_of_connected_components;
+    }
+  }
+
+  std::cout << "The number of connected components is " << number_of_connected_components << std::endl;
+
   return 0;
 }
