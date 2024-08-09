@@ -18,6 +18,11 @@ indent_style = space
 indent_size = 4
 indent_style = tab
 
+# Verilog HDL
+[*.v]
+indent_size = 2
+indent_style = space
+
 [*.go]
 indent_size = 2
 indent_style = tab
