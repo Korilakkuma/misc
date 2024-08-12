@@ -12,6 +12,7 @@ target/
 
 *.a
 *.o
+*.out
 *.wasm
 
 *.aif
