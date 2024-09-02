@@ -20,6 +20,9 @@ target/
 *.flac
 *.wav
 
+# GTKWave
+*.vcd
+
 openssl.cnf
 ca.crt
 ca.csr
