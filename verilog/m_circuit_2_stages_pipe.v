@@ -18,6 +18,8 @@ module m_circuit_2_stages_pipe(w_clock);
   reg [31:0] P1_ir = 32'h13;
   reg [31:0] P1_pc = 0;
 
+  reg P1_v = 0;
+
   wire [31:0] w_npc, w_ir, w_imm, w_r1, w_r2, w_s2, w_rt;
   wire [31:0] w_alu, w_ldd, w_tpc, w_pcin;
 
@@ -26,20 +28,22 @@ module m_circuit_2_stages_pipe(w_clock);
 
   reg[31:0] r_pc = 0;
 
-  m_mux multiplexer_if (w_npc, w_tpc, (w_b & w_token), w_pcin);
+  wire w_miss = w_b & w_token & P1_v;
+
+  m_mux multiplexer_if (w_npc, w_tpc, w_miss, w_pcin);
   m_adder adder_if (32'h4, r_pc, w_npc);
   m_async_imem imem_if (r_pc, w_ir);
 
-  always @(posedge w_clock) { r_pc, P1_ir, P1_pc } <= { w_pcin, w_ir, r_pc };
+  always @(posedge w_clock) { r_pc, P1_ir, P1_pc, P1_v } <= { w_pcin, w_ir, r_pc, !w_miss };
 
   m_gen_imm imm_id (P1_ir, w_imm, w_r, w_i, w_s, w_b, w_u, w_j, w_ld);
-  m_RF rf_id (w_clock, P1_ir[19:15], P1_ir[24:20], w_r1, w_r2, P1_ir[11:7], (!w_s & !w_b), w_rt);
+  m_RF rf_id (w_clock, P1_ir[19:15], P1_ir[24:20], w_r1, w_r2, P1_ir[11:7], (!w_s & !w_b & P1_v), w_rt);
   m_adder adder_id (w_imm, P1_pc, w_tpc);
   m_mux multiplexer_id (w_r2, w_imm, (!w_r & !w_b), w_s2);
 
   m_alu alu_ex (w_r1, w_s2, w_alu, w_token);
 
-  m_async_data_mem mem_ma (w_clock, w_alu, w_s, w_r2, w_ldd);
+  m_async_data_mem mem_ma (w_clock, w_alu, (w_s & P1_v), w_r2, w_ldd);
 
   m_mux multiplexer_wb (w_alu, w_ldd, w_ld, w_rt);
 
