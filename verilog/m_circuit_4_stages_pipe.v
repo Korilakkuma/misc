@@ -29,8 +29,8 @@ module m_circuit_4_stages_pipe(w_clock);
 
   reg P1_v = 0, P2_v = 0, P3_v = 0;
 
-  wire [31:0] w_npc, w_ir, w_imm, w_r1, w_r2, w_s2, w_rt;
-  wire [31:0] w_alu, w_ldd, w_tpc, w_pcin, w_in1, w_in2, w_in3;
+  wire [31:0] w_npc, w_imm, w_r1, w_r2, w_s2, w_rt;
+  wire [31:0] w_alu, w_tpc, w_pcin, w_in1, w_in2, w_in3;
 
   wire w_r, w_i, w_s, w_b, w_u, w_j, w_ld, w_token;
 
@@ -40,7 +40,7 @@ module m_circuit_4_stages_pipe(w_clock);
 
   m_mux multiplexer_if (w_npc, P2_tpc, w_miss, w_pcin);
   m_adder adder_if (32'h4, r_pc, w_npc);
-  m_async_imem imem_if (r_pc, w_ir);
+  m_sync_imem imem_if (w_clock, r_pc, P1_ir);
 
   m_gen_imm imm_id (P1_ir, w_imm, w_r, w_i, w_s, w_b, w_u, w_j, w_ld);
   m_RF rf_id (w_clock, P1_ir[19:15], P1_ir[24:20], w_r1, w_r2, P3_rd, (!P3_s & !P3_b & P3_v), w_rt);
@@ -49,17 +49,17 @@ module m_circuit_4_stages_pipe(w_clock);
 
   always @(posedge w_clock) begin
     { P1_v, P2_v, P3_v } <= { !w_miss, (!w_miss & P1_v), P2_v };
-    { r_pc, P1_ir, P1_pc, P2_pc } <= { w_pcin, w_ir, r_pc, P1_pc };
+    { r_pc, P1_pc, P2_pc } <= { w_pcin, r_pc, P1_pc };
     { P2_r1, P2_r2, P2_s2, P2_tpc } <= { w_r1, w_r2, w_s2, w_tpc };
     { P2_r, P2_s, P2_b, P2_ld } <= { w_r, w_s, w_b, w_ld };
     { P2_rs2, P2_rs1, P2_rd } <= { P1_ir[24:20], P1_ir[19:15], P1_ir[11:7] };
     { P3_pc, P3_s, P3_b, P3_ld } <= { P2_pc, P2_s, P2_b, P2_ld };
-    { P3_alu, P3_ldd, P3_rd } <= { w_alu, w_ldd, P2_rd };
+    { P3_alu, P3_rd } <= { w_alu, P2_rd };
   end
 
   m_alu alu_ex (w_in1, w_in2, w_alu, w_token);
 
-  m_async_data_mem mem_ma (w_clock, w_alu, (P2_s & P2_v), w_in3, w_ldd);
+  m_sync_data_mem mem_ma (w_clock, w_alu, (P2_s & P2_v), w_in3, P3_ldd);
 
   m_mux multiplexer_wb (P3_alu, P3_ldd, P3_ld, w_rt);
 
@@ -152,6 +152,21 @@ module m_async_imem(w_pc, w_insn);
   initial for (i = 0; i < 64; i = i + 1) mem[i] = 32'd0;
 endmodule
 
+module m_sync_imem(w_clock, w_pc, r_insn);
+  input wire w_clock;
+  input wire [31:0] w_pc;
+
+  output reg [31:0] r_insn;
+
+  reg [31:0] mem [0:63];
+
+  always @(posedge w_clock) r_insn <= mem[w_pc[7:2]];
+
+  integer i;
+
+  initial for (i = 0; i < 64; i = i + 1) mem[i] = 32'd0;
+endmodule
+
 module m_async_data_mem(w_clock, w_address, w_we, w_wd, w_rd);
   input  wire w_clock, w_we;
   input  wire [31:0] w_address, w_wd;
@@ -161,6 +176,21 @@ module m_async_data_mem(w_clock, w_address, w_we, w_wd, w_rd);
 
   assign w_rd = mem[w_address[7:2]];
 
+  always @(posedge w_clock) if (w_we) mem[w_address[7:2]] <= w_wd;
+
+  integer i;
+  initial for (i = 0; i < 64; i = i + 1) mem[i] = 32'd0;
+endmodule
+
+module m_sync_data_mem(w_clock, w_address, w_we, w_wd, r_rd);
+  input  wire w_clock, w_we;
+  input  wire [31:0] w_address, w_wd;
+
+  output reg [31:0] r_rd;
+
+  reg [31:0] mem [0:63];
+
+  always @(posedge w_clock) r_rd <= mem[w_address[7:2]];
   always @(posedge w_clock) if (w_we) mem[w_address[7:2]] <= w_wd;
 
   integer i;
