@@ -9,7 +9,7 @@ module m_simulator(w_clock, w_cc);
     `include "asm.txt"
   end
 
-  initial #99 forever #100 $display("CC%1d %h %h %h %h %d %d %d", w_cc, m.r_pc, m.P1_pc, m.P2_pc, m.P3_pc, m.w_in1, m.w_in2, m.w_alu);
+  initial #99 forever #100 $display("CC%1d %h %h %h %h %h %5d %5d %5d", w_cc, m.r_pc, m.P1_pc, m.P2_pc, m.P3_pc, m.P4_pc, m.w_in1, m.w_in2, m.w_alu);
 endmodule
 
 module m_circuit_5_stages_pipe(w_clock);
@@ -30,7 +30,7 @@ module m_circuit_5_stages_pipe(w_clock);
 
   reg [4:0] P2_rd = 0, P2_rs1 = 0, P2_rs2 = 0, P3_rd = 0, P4_rd = 0;
 
-  reg P1_v = 0, P2_v = 0, P3_v = 0;
+  reg P1_v = 0, P2_v = 0, P3_v = 0, P4_v = 0;
 
   wire [31:0] w_npc, w_ir, w_imm, w_r1, w_r2, w_s2, w_rt;
   wire [31:0] w_alu, w_ldd, w_tpc, w_pcin, w_in1, w_in2, w_in3;
@@ -40,37 +40,41 @@ module m_circuit_5_stages_pipe(w_clock);
   reg [31:0] r_pc = 0;
 
   wire w_miss = P2_b & w_token & P2_v;
+  wire w_lduse = P3_v & P3_ld & ((P3_rd == P2_rs1) | ((P3_rd == P2_rs2) & (P2_r | P2_b | P2_s)));
 
   m_mux multiplexer_if (w_npc, P2_tpc, w_miss, w_pcin);
   m_adder adder_if (32'h4, r_pc, w_npc);
   m_async_imem imem_if (r_pc, w_ir);
 
   m_gen_imm imm_id (P1_ir, w_imm, w_r, w_i, w_s, w_b, w_u, w_j, w_ld);
-  m_RF rf_id (w_clock, P1_ir[19:15], P1_ir[24:20], w_r1, w_r2, P3_rd, (!P3_s & !P3_b & P3_v), w_rt);
+  m_RF rf_id (w_clock, P1_ir[19:15], P1_ir[24:20], w_r1, w_r2, P4_rd, (!P4_s & !P4_b & P4_v), w_rt);
   m_adder adder_id (w_imm, P1_pc, w_tpc);
   m_mux multiplexer_id (w_r2, w_imm, (!w_r & !w_b), w_s2);
 
-  always @(posedge w_clock) begin
-    { P1_v, P2_v, P3_v } <= { !w_miss, (!w_miss & P1_v), P2_v };
+  always @(posedge w_clock) if (!w_lduse) begin
+    { P1_v, P2_v } <= { !w_miss, (!w_miss & P1_v) };
     { r_pc, P1_ir, P1_pc, P2_pc } <= { w_pcin, w_ir, r_pc, P1_pc };
     { P2_r1, P2_r2, P2_s2, P2_tpc } <= { w_r1, w_r2, w_s2, w_tpc };
     { P2_r, P2_s, P2_b, P2_ld } <= { w_r, w_s, w_b, w_ld };
     { P2_rs2, P2_rs1, P2_rd } <= { P1_ir[24:20], P1_ir[19:15], P1_ir[11:7] };
+  end else { P2_r1, P2_r2, P2_s2 } <= { w_in1, w_in3, w_in2 };
+  always @(posedge w_clock) begin
+    { P3_v, P4_v } <= { (P2_v & !w_lduse), P3_v };
     { P3_pc, P3_ld, P3_r2, P3_in3 } <= { P2_pc, P2_ld, P2_r2, w_in3 };
     { P3_alu, P3_rd } <= { w_alu, P2_rd };
     { P3_s, P3_b, P3_ld } <= { P2_s, P2_b, P2_ld };
     { P4_pc, P4_s, P4_b, P4_ld } <= { P3_pc, P3_s, P3_b, P3_ld };
-    { P4_alu, P4_ldd, P4_rd } <= { w_alu, w_ldd, P3_rd };
+    { P4_alu, P4_ldd, P4_rd } <= {P3_alu, w_ldd, P3_rd };
   end
 
   m_alu alu_ex (w_in1, w_in2, w_alu, w_token);
 
-  m_async_data_mem mem_ma (w_clock, P3_alu, P3_s, P3_in3, w_ldd);
+  m_async_data_mem mem_ma (w_clock, P3_alu, (P3_s & P3_v), P3_in3, w_ldd);
 
   m_mux multiplexer_wb (P4_alu, P4_ldd, P4_ld, w_rt);
 
-  wire w_f3 = !P3_s & !P3_b & | P3_rd;
-  wire w_f4 = !P4_s & !P4_b & | P4_rd;
+  wire w_f3 = !P3_s & !P3_b & | P3_rd & P3_v;
+  wire w_f4 = !P4_s & !P4_b & | P4_rd & P4_v;
 
   wire w_forward1_P3 = (w_f3 & (P3_rd == P2_rs1));
   wire w_forward1_P4 = (w_f4 & (P4_rd == P2_rs1));
