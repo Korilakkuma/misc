@@ -11,11 +11,12 @@ module m_bimodal(w_clock, w_ra, w_prediction, w_wa, w_we, w_token);
 
   assign w_prediction = w_data[1];
 
-  wire [1:0] w_counter = mem[w_wa];
+  reg [1:0] P1_counter = 0, P2_counter = 0;
 
+  always @(posedge w_clock) { P1_counter, P2_counter } <= { w_data, P1_counter };
   always @(posedge w_clock) if (w_we)
-    mem[w_wa] <= ((w_counter < 3) &  w_token) ? (w_counter + 1) :
-                 ((w_counter > 0) & !w_token) ? (w_counter - 1) : w_counter;
+    mem[w_wa] <= ((P2_counter < 3) &  w_token) ? (P2_counter + 1) :
+                 ((P2_counter > 0) & !w_token) ? (P2_counter - 1) : P2_counter;
 
   integer i;
   initial for (i = 0; i < 32; i = i + 1) mem[i] = 1;
