@@ -47,9 +47,9 @@ module m_cache_proc(w_clock, r_pc, w_ir_in, w_oe, w_re);
 
   wire w_hit;
   wire [31:0] w_dout;
-  wire [57:0] w_wd = { 1'b1, r_pc[31:7], w_ir_in };
+  wire [88:0] w_wd = { 1'b1, r_pc[31:7], w_ir_in, w_oe };
 
-  m_direct_mapped_cache cache (w_clock, r_pc, w_hit, w_dout, r_pc[6:2], w_oe, w_wd);
+  m_direct_mapped_multiword_cache cache (w_clock, r_pc, w_hit, w_dout, r_pc[6:2], w_oe, w_wd);
 
   wire [31:0] w_ir = w_hit ? w_dout : w_ir_in;
   wire w_stall = !w_hit;
