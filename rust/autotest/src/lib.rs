@@ -39,4 +39,13 @@ mod tests {
     fn it_panic() {
         panic!("should panic");
     }
+
+    #[test]
+    fn it_result() -> Result<(), String> {
+        if 2 + 2 == 4 {
+            Ok(())
+        } else {
+            Err(String::from("not equal 4."))
+        }
+    }
 }
