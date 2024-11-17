@@ -33,4 +33,10 @@ mod tests {
 
         assert!(larger.can_hold(&smaller));
     }
+
+    #[test]
+    #[should_panic]
+    fn it_panic() {
+        panic!("should panic");
+    }
 }
