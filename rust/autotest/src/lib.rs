@@ -10,6 +10,14 @@ impl Rectangle {
     }
 }
 
+pub fn add_two(a: i32) -> i32 {
+    internal_adder(a, 2)
+}
+
+fn internal_adder(a: i32, b: i32) -> i32 {
+    a + b
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -47,5 +55,10 @@ mod tests {
         } else {
             Err(String::from("not equal 4."))
         }
+    }
+
+    #[test]
+    fn it_internal_add() {
+        assert_eq!(4, internal_adder(2, 2));
     }
 }
