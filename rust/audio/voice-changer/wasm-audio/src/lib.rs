@@ -152,3 +152,54 @@ impl<T: Clone + Copy> RingBuffer<T> {
         self.discard(self.readable_elements())
     }
 }
+
+trait OverlappedAddable<T> {
+    fn overlap_add(&mut self, src: &[T], overlap_size: usize) -> bool;
+}
+
+impl<T> OverlappedAddable<T> for RingBuffer<T>
+where
+    T: std::ops::AddAssign + Clone + Copy,
+{
+    fn overlap_add(&mut self, src: &[T], overlap_size: usize) -> bool {
+        let length = src.len();
+
+        if length < overlap_size {
+            return false;
+        }
+
+        if self.readable_elements() < overlap_size {
+            return false;
+        }
+
+        let written_size = length - overlap_size;
+
+        if self.writable_elements() < written_size {
+            return false;
+        }
+
+        let buffer_length = self.capacity + 1;
+
+        let write_start = if self.rear >= overlap_size {
+            self.rear - overlap_size
+        } else {
+            buffer_length - (overlap_size - self.rear)
+        };
+
+        let copy_min = std::cmp::min(buffer_length - write_start, overlap_size);
+
+        for n in 0..copy_min {
+            self.buffer[write_start + n] += src[n];
+        }
+
+        if copy_min != overlap_size {
+            let copy_size = overlap_size - copy_min;
+
+            for n in 0..copy_size {
+                self.buffer[n] += src[copy_min + n];
+            }
+        }
+
+        self.write(&src[overlap_size..length])
+    }
+}
