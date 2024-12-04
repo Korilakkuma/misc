@@ -17,6 +17,9 @@ macro_rules! log {
     }
 }
 
+const MIN_DECIBEL: f32 = -48.0;
+static mut MIN_DECIBEL_GAIN: f32 = 0.0;
+
 struct RingBuffer<T: Clone + Copy> {
     buffer: Vec<T>,
     capacity: usize,
