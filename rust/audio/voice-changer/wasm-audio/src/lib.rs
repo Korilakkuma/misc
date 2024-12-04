@@ -11,6 +11,12 @@ use wasm_bindgen::prelude::*;
 
 extern crate web_sys;
 
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }
+}
+
 struct RingBuffer<T: Clone + Copy> {
     buffer: Vec<T>,
     capacity: usize,
