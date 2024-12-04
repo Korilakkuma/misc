@@ -212,3 +212,40 @@ where
         self.write(&src[overlap_size..length])
     }
 }
+
+fn scale_complex(complex_numbers: &mut [Complex<f32>]) {
+    if complex_numbers.len() == 0 {
+        return;
+    }
+
+    let scale = complex_numbers.len() as f32;
+
+    for c in complex_numbers.iter_mut() {
+        *c = Complex::new((c.re() / scale), (c.im() / scale))
+    }
+}
+
+fn has_buffer_f32(buffer: &[f32]) -> bool {
+    buffer.iter().find(|x| x.is_nan()).is_none()
+}
+
+fn has_buffer_complex(buffer: &[Complex<f32>]) -> bool {
+    buffer
+        .iter()
+        .find(|x| (x.re().is_nan() || x.im().is_nan()))
+        .is_none()
+}
+
+fn decibel_to_gain(decibel: f32) -> f32 {
+    (10.0f32).powf(decibel / 20.0f32)
+}
+
+fn gain_to_decibel(gain: f32, min_decibel: f32) -> f32 {
+    if gain == 0.0f32 {
+        return min_decibel;
+    }
+
+    let db = 20.0f32 * gain.abs().log10();
+
+    db.max(min_decibel)
+}
