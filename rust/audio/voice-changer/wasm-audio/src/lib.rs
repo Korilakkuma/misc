@@ -249,3 +249,56 @@ fn gain_to_decibel(gain: f32, min_decibel: f32) -> f32 {
 
     db.max(min_decibel)
 }
+
+#[wasm_bindgen]
+pub struct WasmProcessor {
+    sample_rate: usize,
+    block_size: usize,
+    fft: Arc<dyn Fft<f32>>,
+    ifft: Arc<dyn Fft<f32>>,
+    fft_scratch_buffer: Vec<Complex<f32>>,
+    ifft_scratch_buffer: Vec<Complex<f32>>,
+    fft_size: usize,
+    overlap_count: usize,
+    hop_size: usize,
+    input_ring_buffer: RingBuffer<f32>,
+    output_ring_buffer: RingBuffer<f32>,
+    signal_buffer: Vec<Complex<f32>>,
+    frequency_buffer: Vec<Complex<f32>>,
+    cepstrum_buffer: Vec<Complex<f32>>,
+    tmp_fft_buffer_0: Vec<Complex<f32>>,
+    tmp_fft_buffer_1: Vec<Complex<f32>>,
+    tmp_phase_buffer: Vec<f32>,
+    window: Vec<f32>,
+    prev_input_phases: Vec<f32>,
+    prev_output_phases: Vec<f32>,
+    analysis_magnitude: Vec<f32>,
+    analysis_frequencies: Vec<f32>,
+    synthesis_magnitude: Vec<f32>,
+    synthesis_frequencies: Vec<f32>,
+    original_spectrum: Vec<Complex<f32>>,
+    shifted_spectrum: Vec<Complex<f32>>,
+    synthesis_spectrum: Vec<Complex<f32>>,
+    original_cepstrum: Vec<Complex<f32>>,
+    envelope: Vec<Complex<f32>>,
+    fine_structure: Vec<Complex<f32>>,
+    tmp_buffer: Vec<f32>,
+    wet_buffer: Vec<f32>,
+    dry_wet: f32,
+    format: f32,
+    pitch: f32,
+    output_gain_decibel: f32,
+    envelope_order: usize,
+    input_level: f32,
+    output_level: f32,
+    level_reduction_per_sample: f32,
+}
+
+#[wasm_bindgen]
+impl WasmProcessor {
+    pub fn new(sample_rate: usize, block_size: usize) -> WasmProcessor {
+        unsafe {
+            MIN_DECIBEL_GAIN = decibel_to_gain(MIN_DECIBEL);
+        };
+    }
+}
