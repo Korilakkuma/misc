@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/Korilakkuma/Signaling",
   "dependencies": {
-    "ws": "^8.6.0"
+    "ws": "^8.18.1"
   }
 }

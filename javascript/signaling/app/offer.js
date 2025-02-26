@@ -1,8 +1,11 @@
 const signalingChannel = new SignalingChannel('ws://localhost:3000/');
 const peerConnection = new RTCPeerConnection();
 
-navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+navigator.mediaDevices
+  .getUserMedia({ audio: true, video: true })
   .then((stream) => {
+    cancelEcho(stream);
+
     for (const track of stream.getTracks()) {
       peerConnection.addTrack(track, stream);
     }
