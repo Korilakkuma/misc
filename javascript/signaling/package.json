@@ -20,5 +20,9 @@
   "homepage": "https://github.com/Korilakkuma/Signaling",
   "dependencies": {
     "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "connect": "^3.7.0",
+    "server-static": "^2.0.5"
   }
 }
