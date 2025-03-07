@@ -3,7 +3,11 @@
   "version": "0.0.0",
   "description": "Signaling Server and Signaling Channel for WebRTC",
   "main": "",
-  "scripts": {},
+  "scripts": {
+    "dev:signaling": "node app/signaling.js",
+    "dev:web": "node app/server.js",
+    "dev": "run-p dev:signaling dev:web"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Korilakkuma/Signaling.git"
@@ -23,6 +27,7 @@
   },
   "devDependencies": {
     "connect": "^3.7.0",
+    "npm-run-all": "^4.1.5",
     "server-static": "^2.0.5"
   }
 }
