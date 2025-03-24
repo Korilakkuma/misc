@@ -5,10 +5,13 @@ Signaling Server and Signaling Channel for WebRTC
 ## Setup
 
 ```bash
-$ git clone git@github.com:Korilakkuma/Signaling.git
-$ cd Signaling
 $ npm install
-$ node app/signaling.js
+$ npm run dev
 ```
 
-then, launch answer.html and offer.html in separate windows.
+then, launch `answer.html` and `offer.html` in separate windows.
+
+```bash
+$ open http://localhost:8080/answer.html
+$ open http://localhost:8080/offer.html
+```
