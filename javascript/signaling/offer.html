@@ -3,13 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <title>Offer | WebRTC</title>
+    <link rel="stylesheet" href="app.css" />
   </head>
   <body>
     <main>
-      <video id="local"></video>
-      <video id="remote" muted></video>
+      <dl class="videos">
+        <dt><span>Local</span><label><input type="checkbox" id="enable-adaptive-filter" /><span>Adaptive Filter</span></label></dt>
+        <dd><video id="local"></video></dd>
+        <dt><span>Remote</span><label><input type="checkbox" id="muted-remote" /><span>muted</span></label></dt>
+        <dd><video id="remote"></video></dd>
+      </dl>
+      <div class="analysers">
+        <svg id="analyser-local-time-domain" width="600" height="200"></svg>
+        <svg id="analyser-remote-time-domain" width="600" height="200"></svg>
+      </div>
     </main>
     <script src="./app/SignalingChannel.js"></script>
+    <script src="./app/adaptive-filter.js"></script>
     <script src="./app/offer.js"></script>
   </body>
 </html>
