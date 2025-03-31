@@ -2,7 +2,7 @@
 
 const WebSocket = require('ws');
 const WebSocketServer = WebSocket.Server;
-const port = (process.argv[2] > 0) && (process.argv[2] <= 65535) ? process.argv[2] : 3000;
+const port = 3000;
 
 const ws = new WebSocketServer({ port });
 
