@@ -1,8 +1,10 @@
 const signalingChannel = new SignalingChannel('ws://localhost:3000/');
 const peerConnection = new RTCPeerConnection();
 
-navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-  .then((stream) => {
+navigator
+  .mediaDevices
+  .getUserMedia({ audio: true, video: true })
+  .then(async (stream) => {
     cancelEchoUseStepOnly(stream);
 
     for (const track of stream.getTracks()) {
@@ -12,18 +14,15 @@ navigator.mediaDevices.getUserMedia({ audio: true, video: true })
     const local = document.getElementById('local');
     local.srcObject = stream;
 
-    local.play()
-      .then(() => {})
-      .catch(() => {});
+    await local.play()
 
-    peerConnection.createOffer()
+    peerConnection
+      .createOffer()
       .then((offer) => {
         peerConnection.setLocalDescription(offer);
         signalingChannel.send(offer);
       })
-      .catch((error) => {
-        console.error(error);
-      });
+      .catch(console.error);
 
     peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
@@ -43,14 +42,11 @@ navigator.mediaDevices.getUserMedia({ audio: true, video: true })
 
     signalingChannel.message(() => {}, answer, candidate);
 
-    peerConnection.ontrack = (event) => {
+    peerConnection.ontrack = async (event) => {
       const remote = document.getElementById('remote');
       remote.srcObject = event.streams[0] ? event.streams[0] : null;
 
-      remote.play()
-        .then(() => {})
-        .catch(() => {});
+      await remote.play();
     };
-  }).catch((error) => {
-    console.error(error);
-  });
+  })
+  .catch(console.error);

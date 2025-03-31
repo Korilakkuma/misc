@@ -12,17 +12,17 @@ const offer = (message) => {
     }
   };
 
-  peerConnection.ontrack = (event) => {
+  peerConnection.ontrack = async (event) => {
     const remote = document.getElementById('remote');
     remote.srcObject = event.streams[0] ? event.streams[0] : null;
 
-    remote.play()
-      .then(() => {})
-      .catch(() => {});
+    await remote.play();
   };
 
-  navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-    .then((stream) => {
+  navigator
+    .mediaDevices
+    .getUserMedia({ audio: true, video: true })
+    .then(async (stream) => {
       cancelEchoUseStepOnly(stream);
 
       for (const track of stream.getTracks()) {
@@ -32,22 +32,17 @@ const offer = (message) => {
       const local = document.getElementById('local');
       local.srcObject = stream;
 
-      local.play()
-        .then(() => {})
-        .catch(() => {});
+      await local.play();
 
-      peerConnection.createAnswer()
+      peerConnection
+        .createAnswer()
         .then((answer) => {
           peerConnection.setLocalDescription(answer);
           signalingChannel.send(answer);
         })
-        .catch((error) => {
-          console.error(error);
-        });
+        .catch(console.error);
     })
-    .catch((error) => {
-      console.error(error);
-    });
+    .catch(console.error);
 };
 
 const answer = (message) => {

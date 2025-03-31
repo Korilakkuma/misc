@@ -19,24 +19,29 @@ class SignalingChannel {
       const message = JSON.parse(event.data);
 
       switch (message.type) {
-        case 'offer':
+        case 'offer': {
           if (Object.prototype.toString.call(offer) === '[object Function]') {
             offer(message);
           }
 
           break;
-        case 'answer':
+        }
+
+        case 'answer': {
           if (Object.prototype.toString.call(answer) === '[object Function]') {
             answer(message);
           }
 
           break;
-        default:
+        }
+
+        default: {
           if (message.candidate && (Object.prototype.toString.call(candidate) === '[object Function]')) {
             candidate(message);
           }
 
           break;
+        }
       }
     };
   }
