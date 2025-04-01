@@ -1,4 +1,4 @@
-const signalingChannel = new SignalingChannel('ws://localhost:3000/');
+const signalingChannel = new SignalingChannel(`ws://${ip}:${port}/`);
 const peerConnection = new RTCPeerConnection();
 
 navigator

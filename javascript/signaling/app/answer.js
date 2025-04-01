@@ -1,4 +1,4 @@
-const signalingChannel = new SignalingChannel('ws://localhost:3000/');
+const signalingChannel = new SignalingChannel(`ws://${ip}:${port}/`);
 
 let peerConnection = null;
 

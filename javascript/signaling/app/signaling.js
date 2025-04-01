@@ -1,12 +1,13 @@
 'use strict';
 
+const config = require('./server-config');
+
 const WebSocket = require('ws');
 const WebSocketServer = WebSocket.Server;
-const port = 3000;
 
-const ws = new WebSocketServer({ port });
+const ws = new WebSocketServer({ port: config.port.signaling, host: config.ip });
 
-console.log(`Wait port (${port}) ...`);
+console.log(`ws://${config.ip} Wait port (${config.port.signaling}) ...`);
 
 ws.on('connection', (socket) => {
   socket.on('message', (message) => {
