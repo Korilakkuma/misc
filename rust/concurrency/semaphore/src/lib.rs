@@ -1,4 +1,5 @@
-use std::sync::{Condvar, Mutex};
+use std::collections::LinkedList;
+use std::sync::{Arc, Condvar, Mutex};
 
 pub struct Semaphore {
     mutex: Mutex<isize>,
