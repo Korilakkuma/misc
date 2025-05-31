@@ -1,0 +1,8 @@
+[package]
+name = "epoll_server_and_async_await"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+futures = "0.3.31"
+nix = "0.20.0"
