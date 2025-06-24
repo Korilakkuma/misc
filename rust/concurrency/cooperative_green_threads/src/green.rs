@@ -100,3 +100,11 @@ impl Context {
         &self.regs as *const Registers
     }
 }
+
+static mut CTX_MAIN: Option<Box<Registers>> = None;
+
+static mut UNUSED_STACK: (*mut u8, Layout) = (ptr::null_mut(), Layout::new::<u8>());
+
+static mut CONTEXTS: LinkedList<Box<Context>> = LinkedList::new();
+
+static mut ID: *mut HashSet<u64> = ptr::null_mut();
