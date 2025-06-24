@@ -56,3 +56,48 @@ impl Registers {
         }
     }
 }
+
+extern "C" {
+    fn set_context(ctx: *mut Registers) -> u64;
+    fn switch_context(ctx: *const Registers) -> !;
+}
+
+type Entry = fn();
+
+const PAGE_SIZE: usize = 4 * 1024; // 4KiB on Linux
+
+struct Context {
+    regs: Registers,
+    stack: *mut u8,
+    stack_layout: Layout,
+    entry: Entry,
+    id: u64,
+}
+
+impl Context {
+    fn new(entry: Entry, stack_size: usize, id: u64) -> Self {
+        let stack_layout = Layout::from_size_align(stack_size, PAGE_SIZE).unwrap();
+
+        let stack = unsafe { alloc(stack_layout) };
+
+        unsafe { mprotect(stack as *mut c_void, PAGE_SIZE, ProtFlags::PROT_NONE).unwrap() };
+
+        let regs = Registers::new(stack as u64 + stack_size as u64);
+
+        Context {
+            regs,
+            stack,
+            stack_layout,
+            entry,
+            id,
+        }
+    }
+
+    fn get_regs_mut(&mut self) -> *mut Registers {
+        &mut self.regs as *mut Registers
+    }
+
+    fn get_regs(&self) -> *const Registers {
+        &self.regs as *const Registers
+    }
+}
