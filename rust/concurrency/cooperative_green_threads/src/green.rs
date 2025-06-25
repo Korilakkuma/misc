@@ -110,6 +110,28 @@ impl Context {
     }
 }
 
+pub fn schedule() {
+    unsafe {
+        if CONTEXTS.len() == 1 {
+            return;
+        }
+
+        let mut ctx = CONTEXTS.pop_front().unwrap();
+
+        let regs = ctx.get_regs_mut();
+
+        CONTEXTS.push_back(ctx);
+
+        if set_context(regs) == 0 {
+            let next = CONTEXTS.front().unwrap();
+
+            switch_context((**next).get_regs());
+        }
+
+        rm_unused_stack();
+    }
+}
+
 fn get_id() -> u64 {
     loop {
         let rnd = rand::random::<u64>();
@@ -120,5 +142,22 @@ fn get_id() -> u64 {
                 return rnd;
             }
         };
+    }
+}
+
+fn rm_unused_stack() {
+    unsafe {
+        if UNUSED_STACK.0 != ptr::null_mut() {
+            mprotect(
+                UNUSED_STACK.0 as *mut c_void,
+                PAGE_SIZE,
+                ProtFlags::PROT_READ | ProtFlags::PROT_WRITE,
+            )
+            .unwrap();
+
+            dealloc(UNUSED_STACK.0, UNUSED_STACK.1);
+
+            UNUSED_STACK = (ptr::null_mut(), Layout::new::<u8>());
+        }
     }
 }
