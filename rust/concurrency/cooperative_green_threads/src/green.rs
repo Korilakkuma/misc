@@ -108,3 +108,16 @@ static mut UNUSED_STACK: (*mut u8, Layout) = (ptr::null_mut(), Layout::new::<u8>
 static mut CONTEXTS: LinkedList<Box<Context>> = LinkedList::new();
 
 static mut ID: *mut HashSet<u64> = ptr::null_mut();
+
+fn get_id() -> u64 {
+    loop {
+        let rnd = rand::random::<u64>();
+
+        unsafe {
+            if !(*ID).contains(&rnd) {
+                (*ID).insert(rnd);
+                return rnd;
+            }
+        };
+    }
+}
