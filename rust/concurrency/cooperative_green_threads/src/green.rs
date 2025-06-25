@@ -109,3 +109,16 @@ impl Context {
         &self.regs as *const Registers
     }
 }
+
+fn get_id() -> u64 {
+    loop {
+        let rnd = rand::random::<u64>();
+
+        unsafe {
+            if !(*ID).contains(&rnd) {
+                (*ID).insert(rnd);
+                return rnd;
+            }
+        };
+    }
+}
