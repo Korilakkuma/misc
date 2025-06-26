@@ -110,6 +110,18 @@ impl Context {
     }
 }
 
+pub fn spawn(entry: Entry, stack_size: usize) -> u64 {
+    unsafe {
+        let id = get_id();
+
+        CONTEXTS.push_back(Box::new(Context::new(entry, stack_size, id)));
+
+        schedule();
+
+        id
+    }
+}
+
 pub fn schedule() {
     unsafe {
         if CONTEXTS.len() == 1 {
