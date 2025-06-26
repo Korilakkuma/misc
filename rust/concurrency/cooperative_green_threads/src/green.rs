@@ -110,6 +110,35 @@ impl Context {
     }
 }
 
+extern "C" fn entry_point() {
+    unsafe {
+        let ctx = CONTEXTS.front().unwrap();
+
+        ((**ctx).entry)();
+
+        // After executing thread
+
+        let ctx = CONTEXTS.pop_front().unwrap();
+
+        (*ID).remove(&ctx.id);
+
+        UNUSED_STACK = ((*ctx).stack, (*ctx).stack_layout);
+
+        match CONTEXTS.front() {
+            Some(c) => {
+                switch_context((**c).get_regs());
+            }
+            None => {
+                if let Some(c) = &CTX_MAIN {
+                    switch_context(&**c as *const Registers);
+                }
+            }
+        }
+    }
+
+    panic!("entry_point");
+}
+
 pub fn spawn(entry: Entry, stack_size: usize) -> u64 {
     unsafe {
         let id = get_id();
