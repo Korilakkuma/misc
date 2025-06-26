@@ -109,6 +109,18 @@ static mut CONTEXTS: LinkedList<Box<Context>> = LinkedList::new();
 
 static mut ID: *mut HashSet<u64> = ptr::null_mut();
 
+pub fn spawn(entry: Entry, stack_size: usize) -> u64 {
+    unsafe {
+        let id = get_id();
+
+        CONTEXTS.push_back(Box::new(Context::new(entry, stack_size, id)));
+
+        schedule();
+
+        id
+    }
+}
+
 pub fn schedule() {
     unsafe {
         if CONTEXTS.len() == 1 {
