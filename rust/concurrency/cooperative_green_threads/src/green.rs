@@ -187,6 +187,52 @@ extern "C" fn entry_point() {
     panic!("entry_point");
 }
 
+pub fn spawn_from_main(entry: Entry, stack_size: usize) {
+    unsafe {
+        if let Some(_) = &CTX_MAIN {
+            panic!("`spawn_from_main` is called twice");
+        }
+
+        CTX_MAIN = Some(Box::new(Registers::new(0)));
+
+        if let Some(ctx) = &mut CTX_MAIN {
+            let mut msgs = MappedList::new();
+
+            MESSAGES = &mut msgs as *mut MappedList<u64>;
+
+            let mut waiting = HashMap::new();
+
+            WAITING = &mut waiting as *mut HashMap<u64, Box<Context>>;
+
+            let mut ids = HashSet::new();
+
+            ID = &mut ids as *mut HashSet<u64>;
+
+            if set_context(&mut **ctx as *mut Registers) == 0 {
+                CONTEXTS.push_back(Box::new(Context::new(entry, stack_size, get_id())));
+
+                let first = CONTEXTS.front().unwrap();
+
+                switch_context(first.get_regs());
+            }
+
+            rm_unused_stack();
+
+            CTX_MAIN = None;
+
+            CONTEXTS.clear();
+
+            MESSAGES = ptr::null_mut();
+            WAITING = ptr::null_mut();
+            ID = ptr::null_mut();
+
+            msgs.clear();
+            waiting.clear();
+            ids.clear();
+        }
+    }
+}
+
 pub fn spawn(entry: Entry, stack_size: usize) -> u64 {
     unsafe {
         let id = get_id();
