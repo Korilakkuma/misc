@@ -101,6 +101,50 @@ impl Context {
     }
 }
 
+struct MappedList<T> {
+    map: HashMap<u64, LinkedList<T>>,
+}
+
+impl<T> MappedList<T> {
+    fn new() -> Self {
+        MappedList {
+            map: HashMap::new(),
+        }
+    }
+
+    // enqueue
+    fn push_back(&mut self, key: u64, val: T) {
+        if Some(list) = self.map.get_mut(&key) {
+            list.push_back(value);
+        } else {
+            let mut list = LinkedList::new();
+
+            list.push_back(val);
+
+            self.map.insert(key, list);
+        }
+    }
+
+    // dequeue
+    fn pop_front(&mut self, key: u64) -> Option<T> {
+        if let Some(list) = self.map.get_mut(&key) {
+            let val = list.pop_front();
+
+            if list.len() == 0 {
+                self.map.remove(key);
+            }
+
+            val
+        } else {
+            None
+        }
+    }
+
+    fn clear(&mut self) {
+        self.map.clear();
+    }
+}
+
 static mut CTX_MAIN: Option<Box<Registers>> = None;
 
 static mut UNUSED_STACK: (*mut u8, Layout) = (ptr::null_mut(), Layout::new::<u8>());
@@ -108,6 +152,10 @@ static mut UNUSED_STACK: (*mut u8, Layout) = (ptr::null_mut(), Layout::new::<u8>
 static mut CONTEXTS: LinkedList<Box<Context>> = LinkedList::new();
 
 static mut ID: *mut HashSet<u64> = ptr::null_mut();
+
+static mut MESSAGES: &mut MappedList<u64> = ptr::null_mut();
+
+static mut WAITING: &mut HashMap<u64, Box<Context>> = ptr::null_mut();
 
 extern "C" fn entry_point() {
     unsafe {
