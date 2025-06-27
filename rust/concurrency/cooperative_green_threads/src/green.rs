@@ -13,6 +13,10 @@ static mut CONTEXTS: LinkedList<Box<Context>> = LinkedList::new();
 
 static mut ID: *mut HashSet<u64> = ptr::null_mut();
 
+static mut MESSAGES: *mut MappedList<u64> = ptr::null_mut();
+
+static mut WAITING: *mut HashMap<u64, Box<Context>> = ptr::null_mut();
+
 #[repr(C)]
 struct Registers {
     d8: u64,
@@ -107,6 +111,50 @@ impl Context {
 
     fn get_regs(&self) -> *const Registers {
         &self.regs as *const Registers
+    }
+}
+
+struct MappedList<T> {
+    map: HashMap<u64, LinkedList<T>>,
+}
+
+impl<T> MappedList<T> {
+    fn new() -> Self {
+        MappedList {
+            map: HashMap::new(),
+        }
+    }
+
+    // enqueue
+    fn push_back(&mut self, key: u64, val: T) {
+        if let Some(list) = self.map.get_mut(&key) {
+            list.push_back(val);
+        } else {
+            let mut list = LinkedList::new();
+
+            list.push_back(val);
+
+            self.map.insert(key, list);
+        }
+    }
+
+    // dequeue
+    fn pop_front(&mut self, key: u64) -> Option<T> {
+        if let Some(list) = self.map.get_mut(&key) {
+            let val = list.pop_front();
+
+            if list.len() == 0 {
+                self.map.remove(&key);
+            }
+
+            val
+        } else {
+            None
+        }
+    }
+
+    fn clear(&mut self) {
+        self.map.clear();
     }
 }
 
