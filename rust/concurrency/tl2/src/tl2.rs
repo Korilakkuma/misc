@@ -74,3 +74,52 @@ impl Memory {
         self.lock_ver[index].fetch_and(!(1 << 63), Ordering::Relaxed);
     }
 }
+
+pub struct ReadTrans<'a> {
+    read_ver: u64,
+    is_abort: bool,
+    mem: &'a Memory,
+}
+
+impl<'a> ReadTrans<'a> {
+    fn new(mem: &'a Memory) -> Self {
+        ReadTrans {
+            read_ver: mem.global_clock.load(Ordering::Acquire),
+            is_abort: false,
+            mem,
+        }
+    }
+
+    pub fn load(&mut self, addr: usize) -> Option<[u8; SIZE_OF_STRIPE]> {
+        if self.is_abort {
+            return None;
+        }
+
+        assert_eq!(addr & (SIZE_OF_STRIPE - 1), 0);
+
+        if !self.mem.test_not_modify(addr, self.read_ver) {
+            self.is_abort = true;
+            return None;
+        }
+
+        fence(Ordering::Acquire);
+
+        let mut mem = [0; SIZE_OF_STRIPE];
+
+        for (dest, src) in mem
+            .iter_mut()
+            .zip(self.mem.mem[addr..addr + SIZE_OF_STRIPE].iter())
+        {
+            *dest = *src;
+        }
+
+        fence(Ordering::SeqCst);
+
+        if !self.mem.test_not_modify(addr, self.read_ver) {
+            self.is_abort = true;
+            return None;
+        }
+
+        Some(mem)
+    }
+}
