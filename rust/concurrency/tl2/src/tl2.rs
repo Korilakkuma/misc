@@ -1,5 +1,6 @@
 use std::cell::UnsafeCell;
 use std::collections::{HashMap, HashSet};
+use std::marker::{Send, Sync};
 use std::ops::Drop;
 use std::sync::atomic::{fence, AtomicU64, Ordering};
 
@@ -257,4 +258,89 @@ pub enum STMResult<T> {
     Ok(T),
     Retry,
     Abort,
+}
+
+pub struct STM {
+    mem: UnsafeCell<Memory>,
+}
+
+unsafe impl Send for STM {}
+unsafe impl Sync for STM {}
+
+impl STM {
+    pub fn new() -> Self {
+        STM {
+            mem: UnsafeCell::new(Memory::new()),
+        }
+    }
+
+    pub fn read_transaction<F, R>(&self, f: F) -> Option<R>
+    where
+        F: Fn(&mut ReadTrans) -> STMResult<R>,
+    {
+        loop {
+            let mut tr = ReadTrans::new(unsafe { &*self.mem.get() });
+
+            match f(&mut tr) {
+                STMResult::Abort => return None,
+                STMResult::Retry => {
+                    if tr.is_abort {
+                        continue;
+                    }
+
+                    return None;
+                }
+                STMResult::Ok(val) => {
+                    if tr.is_abort {
+                        continue;
+                    } else {
+                        return Some(val);
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn write_transaction<F, R>(&self, f: F) -> Option<R>
+    where
+        F: Fn(&mut WriteTrans) -> STMResult<R>,
+    {
+        loop {
+            let mut tr = WriteTrans::new(unsafe { &mut *self.mem.get() });
+
+            let result;
+
+            match f(&mut tr) {
+                STMResult::Abort => return None,
+                STMResult::Retry => {
+                    if tr.is_abort {
+                        continue;
+                    }
+
+                    return None;
+                }
+                STMResult::Ok(val) => {
+                    if tr.is_abort {
+                        continue;
+                    }
+
+                    result = val;
+                }
+            }
+
+            if !tr.lock_write_set() {
+                continue;
+            }
+
+            let ver = 1 + tr.mem.inc_global_clock();
+
+            if tr.read_ver + 1 != ver && !tr.validate_read_set() {
+                continue;
+            }
+
+            tr.commit(ver);
+
+            return Some(result);
+        }
+    }
 }
