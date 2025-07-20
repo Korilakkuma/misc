@@ -252,3 +252,9 @@ impl<'a> Drop for WriteTrans<'a> {
         }
     }
 }
+
+pub enum STMResult<T> {
+    Ok(T),
+    Retry,
+    Abort,
+}
