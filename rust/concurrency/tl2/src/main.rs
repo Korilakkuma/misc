@@ -23,7 +23,26 @@ macro_rules! store {
 
 const NUMBER_OF_THREADS: usize = 8;
 
-fn main() {}
+fn main() {
+    let stm = Arc::new(tl2::STM::new());
+
+    let mut handlers = vec![];
+
+    for i in 0..NUMBER_OF_THREADS {
+        let s = stm.clone();
+        let h = thread::spawn(move || thread_executor(s, i));
+
+        handlers.push(h);
+    }
+
+    let obs = thread::spawn(move || observer(stm));
+
+    for handler in handlers {
+        handler.join().unwrap();
+    }
+
+    obs.join().unwrap();
+}
 
 fn thread_executor(stm: Arc<tl2::STM>, n: usize) {
     let left = 8 * n;
