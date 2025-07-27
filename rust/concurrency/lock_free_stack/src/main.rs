@@ -2,7 +2,7 @@
 
 mod stack;
 
-use stack::StackHead;
+use stack::Stack;
 use std::sync::Arc;
 use std::thread;
 
@@ -10,7 +10,7 @@ const NUMBER_OF_LOOPS: usize = 1000000;
 const NUMBER_OF_THREADS: usize = 4;
 
 fn main() {
-    let stack = Arc::new(StackHead::<usize>::new());
+    let stack = Arc::new(Stack::<usize>::new());
 
     let mut handlers = vec![];
 
@@ -23,7 +23,7 @@ fn main() {
                 for j in 0..NUMBER_OF_LOOPS {
                     let k = j + i * NUMBER_OF_LOOPS;
 
-                    stack0.push(k);
+                    stack0.get_mut().push(k);
 
                     println!("End push: #{}", i);
                 }
@@ -31,7 +31,7 @@ fn main() {
                 // odd
                 for _ in 0..NUMBER_OF_LOOPS {
                     loop {
-                        if let Some(k) = stack0.pop() {
+                        if let Some(k) = stack0.get_mut().pop() {
                             println!("pop: {}", k);
                             break;
                         }
@@ -49,5 +49,5 @@ fn main() {
         handler.join().unwrap();
     }
 
-    assert!(stack.pop() == None);
+    assert!(stack.get_mut().pop() == None);
 }
