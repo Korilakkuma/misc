@@ -1,3 +1,4 @@
+use std::arch::asm;
 use std::cell::UnsafeCell;
 use std::marker::{Send, Sync};
 use std::ops::Drop;
@@ -62,7 +63,7 @@ impl<T> StackHead<T> {
         };
     }
 
-    pub fn pop(&self) -> Option<T> {
+    pub fn pop(&mut self) -> Option<T> {
         unsafe {
             let head = &mut self.head as *mut *mut Node<T> as *mut u8 as usize;
 
