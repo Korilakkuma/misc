@@ -6,7 +6,7 @@ mod db_client;
 mod db_server;
 mod db_server_macro;
 
-use crate::channel::S;
+use crate::channel::{chan_recv, chan_send, S};
 use crate::db_client::db_client;
 use crate::db_server::db_server;
 use crate::db_server_macro::db_server_macro;
@@ -28,6 +28,17 @@ fn main() {
 
     let srv_t = thread::spawn(move || db_server_macro(server_chan));
     let cli_t = thread::spawn(move || db_client(client_chan));
+
+    srv_t.join().unwrap();
+    cli_t.join().unwrap();
+
+    println!("Use channel --------");
+
+    // Use channel
+    let (server_chan, client_chan) = S::session_channel();
+
+    let srv_t = thread::spawn(move || chan_recv(server_chan));
+    let cli_t = thread::spawn(move || chan_send(client_chan));
 
     srv_t.join().unwrap();
     cli_t.join().unwrap();
