@@ -1,0 +1,6 @@
+[package]
+name = "barrier_synchronization_by_pi_calculus"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
