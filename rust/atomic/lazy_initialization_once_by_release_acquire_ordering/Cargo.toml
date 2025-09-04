@@ -1,0 +1,6 @@
+[package]
+name = "lazy_initialization_once_by_release_acquire_ordering"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
