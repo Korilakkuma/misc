@@ -9,6 +9,23 @@ fn main() {
     black_box(&A);
 
     thread::spawn(|| loop {
+        A.store(0, Ordering::Relaxed);
+    });
+
+    let start = Instant::now();
+
+    for _ in 0..1_000_000_000 {
+        black_box(A.load(Ordering::Relaxed));
+    }
+
+    println!("{:?}", start.elapsed());
+}
+
+/*
+fn main() {
+    black_box(&A);
+
+    thread::spawn(|| loop {
         black_box(A.load(Ordering::Relaxed));
     });
 
@@ -20,6 +37,7 @@ fn main() {
 
     println!("{:?}", start.elapsed());
 }
+*/
 
 /*
 fn main() {
