@@ -1,0 +1,7 @@
+[package]
+name = "mutex_by_atomic_wait"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+atomic-wait = "1.1.0"

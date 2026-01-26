@@ -1,0 +1,71 @@
+use atomic_wait::{wait, wake_one};
+use std::cell::UnsafeCell;
+use std::marker::Sync;
+use std::ops::{Deref, DerefMut, Drop};
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::time::Instant;
+
+struct Mutex<T> {
+    state: AtomicU32,
+    value: UnsafeCell<T>,
+}
+
+struct MutexGuard<'a, T> {
+    mutex: &'a Mutex<T>,
+}
+
+unsafe impl<T> Sync for MutexGuard<'_, T> where T: Sync {}
+
+impl<T> Deref for MutexGuard<'_, T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        unsafe { &*self.mutex.value.get() }
+    }
+}
+
+impl<T> DerefMut for MutexGuard<'_, T> {
+    fn deref_mut(&mut self) -> &mut T {
+        unsafe { &mut *self.mutex.value.get() }
+    }
+}
+
+impl<T> Drop for MutexGuard<'_, T> {
+    fn drop(&mut self) {
+        self.mutex.state.store(0, Ordering::Release);
+        wake_one(&self.mutex.state);
+    }
+}
+
+impl<T> Mutex<T> {
+    pub const fn new(value: T) -> Self {
+        Self {
+            state: AtomicU32::new(0),
+            value: UnsafeCell::new(value),
+        }
+    }
+
+    pub fn lock(&self) -> MutexGuard<'_, T> {
+        while self.state.swap(1, Ordering::Acquire) == 1 {
+            wait(&self.state, 1);
+        }
+
+        MutexGuard { mutex: self }
+    }
+}
+
+fn main() {
+    let m = Mutex::new(0);
+
+    std::hint::black_box(&m);
+
+    let start = Instant::now();
+
+    for _ in 0..5_000_000 {
+        *m.lock() += 1;
+    }
+
+    let duration = start.elapsed();
+
+    println!("locked {} times in {:?}", *m.lock(), duration);
+}
