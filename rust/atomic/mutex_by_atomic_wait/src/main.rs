@@ -34,8 +34,9 @@ impl<T> DerefMut for MutexGuard<'_, T> {
 
 impl<T> Drop for MutexGuard<'_, T> {
     fn drop(&mut self) {
-        self.mutex.state.store(0, Ordering::Release);
-        wake_one(&self.mutex.state);
+        if self.mutex.state.swap(0, Ordering::Release) == 2 {
+            wake_one(&self.mutex.state);
+        }
     }
 }
 
@@ -51,8 +52,14 @@ impl<T> Mutex<T> {
     }
 
     pub fn lock(&self) -> MutexGuard<'_, T> {
-        while self.state.swap(1, Ordering::Acquire) == 1 {
-            wait(&self.state, 1);
+        if self
+            .state
+            .compare_exchange(0, 1, Ordering::Acquire, Ordering::Relaxed)
+            .is_err()
+        {
+            while self.state.swap(2, Ordering::Acquire) == 0 {
+                wait(&self.state, 2);
+            }
         }
 
         MutexGuard { mutex: self }
