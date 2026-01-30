@@ -3,7 +3,7 @@ use std::cell::UnsafeCell;
 use std::marker::{Send, Sync};
 use std::mem::drop;
 use std::ops::{Deref, DerefMut, Drop};
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::{AtomicU32, AtomicUsize, Ordering};
 use std::thread;
 use std::time::Instant;
 
@@ -86,26 +86,34 @@ fn lock_contended(state: &AtomicU32) {
 }
 struct Condvar {
     counter: AtomicU32,
+    number_of_waiters: AtomicUsize,
 }
 
 impl Condvar {
     pub const fn new() -> Self {
         Self {
             counter: AtomicU32::new(0),
+            number_of_waiters: AtomicUsize::new(0),
         }
     }
 
     pub fn notify_one(&self) {
-        self.counter.fetch_add(1, Ordering::Relaxed);
-        wake_one(&self.counter);
+        if self.number_of_waiters.load(Ordering::Relaxed) > 0 {
+            self.counter.fetch_add(1, Ordering::Relaxed);
+            wake_one(&self.counter);
+        }
     }
 
     pub fn notify_all(&self) {
-        self.counter.fetch_add(1, Ordering::Relaxed);
-        wake_all(&self.counter);
+        if self.number_of_waiters.load(Ordering::Relaxed) > 0 {
+            self.counter.fetch_add(1, Ordering::Relaxed);
+            wake_all(&self.counter);
+        }
     }
 
     pub fn wait<'a, T>(&self, guard: MutexGuard<'a, T>) -> MutexGuard<'a, T> {
+        self.number_of_waiters.fetch_add(1, Ordering::Relaxed);
+
         let counter_value = self.counter.load(Ordering::Relaxed);
 
         let mutex = guard.mutex;
@@ -113,6 +121,8 @@ impl Condvar {
         drop(guard);
 
         wait(&self.counter, counter_value);
+
+        self.number_of_waiters.fetch_sub(1, Ordering::Relaxed);
 
         mutex.lock()
     }
