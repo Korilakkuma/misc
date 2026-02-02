@@ -25,12 +25,12 @@ impl<T> RWLock<T> {
         let mut s = self.state.load(Ordering::Relaxed);
 
         loop {
-            if s < u32::MAX {
-                assert!(s < u32::MAX - 1, "too many readers");
+            if s % 2 == 0 {
+                assert!(s < u32::MAX - 2, "too many readers");
 
                 match self.state.compare_exchange_weak(
                     s,
-                    s + 1,
+                    s + 2,
                     Ordering::Acquire,
                     Ordering::Relaxed,
                 ) {
@@ -39,8 +39,8 @@ impl<T> RWLock<T> {
                 }
             }
 
-            if s == u32::MAX {
-                wait(&self.state, u32::MAX);
+            if s % 2 == 1 {
+                wait(&self.state, s);
 
                 s = self.state.load(Ordering::Relaxed);
             }
@@ -48,19 +48,45 @@ impl<T> RWLock<T> {
     }
 
     pub fn write(&self) -> WriteGuard<'_, T> {
-        while self
-            .state
-            .compare_exchange(0, u32::MAX, Ordering::Acquire, Ordering::Relaxed)
-            .is_err()
-        {
-            let w = self.state.load(Ordering::Acquire);
+        let mut s = self.state.load(Ordering::Relaxed);
 
-            if self.state.load(Ordering::Relaxed) != 0 {
-                wait(&self.writer_wake_counter, w);
+        loop {
+            if s <= 1 {
+                match self
+                    .state
+                    .compare_exchange(s, u32::MAX, Ordering::Acquire, Ordering::Relaxed)
+                {
+                    Ok(_) => return WriteGuard { rwlock: self },
+                    Err(e) => {
+                        s = e;
+                        continue;
+                    }
+                }
+            }
+
+            if s % 2 == 0 {
+                match self
+                    .state
+                    .compare_exchange(s, s + 1, Ordering::Acquire, Ordering::Relaxed)
+                {
+                    Ok(_) => {}
+                    Err(e) => {
+                        s = e;
+                        continue;
+                    }
+                }
+            }
+
+            let w = self.writer_wake_counter.load(Ordering::Acquire);
+
+            s = self.state.load(Ordering::Relaxed);
+
+            if s >= 2 {
+                wait(&self.state, w);
+
+                s = self.state.load(Ordering::Relaxed);
             }
         }
-
-        WriteGuard { rwlock: self }
     }
 }
 
@@ -78,7 +104,7 @@ impl<T> Deref for ReadGuard<'_, T> {
 
 impl<T> Drop for ReadGuard<'_, T> {
     fn drop(&mut self) {
-        if self.rwlock.state.fetch_sub(1, Ordering::Release) == 1 {
+        if self.rwlock.state.fetch_sub(1, Ordering::Release) == 3 {
             self.rwlock
                 .writer_wake_counter
                 .fetch_add(1, Ordering::Release);
@@ -108,7 +134,9 @@ impl<T> DerefMut for WriteGuard<'_, T> {
 impl<T> Drop for WriteGuard<'_, T> {
     fn drop(&mut self) {
         self.rwlock.state.store(0, Ordering::Release);
-        self.rwlock.writer_wake_counter.store(0, Ordering::Release);
+        self.rwlock
+            .writer_wake_counter
+            .fetch_add(1, Ordering::Release);
         wake_one(&self.rwlock.writer_wake_counter);
         wake_all(&self.rwlock.state);
     }
