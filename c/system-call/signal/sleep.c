@@ -2,10 +2,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-inline void hint_loop(void) {
-  for (int i = 0; i < 0xfffff; i++) {
-    ;
-  }
+void alarm_handler(int sig) {
+  // Noop
 }
 
 int main(int argc, char **argv) {
@@ -16,11 +14,10 @@ int main(int argc, char **argv) {
 
   unsigned long long sec = strtoull(argv[1], NULL, 10);
 
-  alarm(sec);
+  signal(SIGALRM, alarm_handler);
 
-  while (1) {
-    hint_loop();
-  }
+  alarm(sec);
+  pause();
 
   return 0;
 }
