@@ -1,3 +1,4 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -14,10 +15,16 @@ int main(int argc, char **argv) {
 
   unsigned long long sec = strtoull(argv[1], NULL, 10);
 
-  signal(SIGALRM, alarm_handler);
+  sigset_t new_sigset;
+  sigset_t current_sigset;
 
+  sigemptyset(&new_sigset);
+  sigaddset(&new_sigset, SIGALRM);
+  signal(SIGALRM, alarm_handler);
+  sigprocmask(SIG_BLOCK, &new_sigset, &current_sigset);
   alarm(sec);
-  pause();
+  sigsuspend(&current_sigset);  // sigprocmask(SIG_SETMASK, mask, &current_sigset) + pause()
+  sigprocmask(SIG_SETMASK, &current_sigset, NULL);
 
   return 0;
 }
