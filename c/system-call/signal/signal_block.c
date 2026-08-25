@@ -1,8 +1,8 @@
 #include <signal.h>
 #include <stdio.h>
 
-static volatile long long counter_1 = 0;
-static volatile long long counter_2 = 0;
+static volatile sig_atomic_t counter_1 = 0;
+static volatile sig_atomic_t counter_2 = 0;
 
 void handler(int sig) {
   ++counter_1;
@@ -18,7 +18,7 @@ int main(void) {
 
   signal(SIGINT, handler);
 
-  for (long long i = 0; i < 10000000; i++) {
+  for (sig_atomic_t i = 0; i < 10000000; i++) {
     sigprocmask(SIG_BLOCK, &set, &old_set);
 
     ++counter_1;
@@ -28,8 +28,8 @@ int main(void) {
 
   sigprocmask(SIG_BLOCK, &set, &old_set);
 
-  fprintf(stdout, "counter 1 = %lld\n", counter_1);
-  fprintf(stdout, "counter 2 = %lld\n", counter_2);
+  fprintf(stdout, "counter 1 = %d\n", counter_1);
+  fprintf(stdout, "counter 2 = %d\n", counter_2);
 
   sigprocmask(SIG_SETMASK, &old_set, NULL);
 }
