@@ -13,10 +13,10 @@ int main(void) {
   }
 
   if (new_pid == 0) {
-    pid_t pid = setpgrp();
+    setpgid(new_pid, new_pid);
 
     while (1) {
-      fprintf(stdout, "This PID is %d (PGID is %d)\n", pid, getpgrp());
+      fprintf(stdout, "This PID is %d (PGID is %d)\n", getpgrp(), getpgid(new_pid));
       sleep(1);
     }
 
