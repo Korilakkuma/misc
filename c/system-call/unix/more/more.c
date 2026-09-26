@@ -5,7 +5,7 @@
 #define LENGTH_OF_LINE 512
 
 static void more(FILE *fp);
-static int print(void);
+static int print(FILE *fp);
 
 int main(int argc, char **argv) {
   FILE *fp;
@@ -37,9 +37,16 @@ static void more(FILE *fp) {
   int number_of_lines = 0;
   int read_of_lines   = 0;
 
+  FILE *tty;
+
+  if ((tty = fopen("/dev/tty", "r")) == NULL) {
+    perror("fopen");
+    exit(EXIT_FAILURE);
+  }
+
   while (fgets(lines, sizeof(lines), fp) != NULL) {
     if (number_of_lines == LENGTH_OF_PAGE) {
-      read_of_lines = print();
+      read_of_lines = print(tty);
 
       if (read_of_lines == 0) {
         return;
@@ -56,12 +63,12 @@ static void more(FILE *fp) {
   }
 }
 
-static int print(void) {
+static int print(FILE *fp) {
   int ch;
 
   fputs("\0337m more? \033m", stdout);
 
-  while ((ch = fgetc(stdin)) != EOF) {
+  while ((ch = fgetc(fp)) != EOF) {
     switch (ch) {
       case 'q': {
         return 0;
