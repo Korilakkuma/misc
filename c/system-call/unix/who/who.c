@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #include <utmp.h>
 
@@ -32,10 +33,16 @@ int main(int argc, char **argv) {
 }
 
 static void who(struct utmp *record) {
-  fprintf(stdout, "%-20.20s %-10.10s %10ld", record->ut_user, record->ut_line, record->ut_tv.tv_sec);
+  if (record->ut_type != USER_PROCESS) {
+    return;
+  }
+
+  fprintf(stdout, "%-20.20s %-10.10s %12.12s", record->ut_user, record->ut_line, ctime(&record->ut_tv.tv_sec));
 
 #ifdef SHOWHOST
-  fprintf(stdout, "(%s)", record->ut_host);
+  if (record->ut_host[0] != '\0') {
+    fprintf(stdout, " (%s)", record->ut_host);
+  }
 #endif
 
   fputc('\n', stdout);
