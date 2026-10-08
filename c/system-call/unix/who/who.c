@@ -7,21 +7,31 @@
 
 #define SHOWHOST
 
+#define NUMBER_OF_RECORDS 16
+#define UTMP_SIZE         (sizeof(struct utmp))
+
+static char utmp_buf[NUMBER_OF_RECORDS * UTMP_SIZE];
+static int number_of_records;
+static int current_record;
+
 static void who(struct utmp *record);
+static struct utmp *utmp_next(int fd);
+static int utmp_read(int fd);
 
 int main(int argc, char **argv) {
-  struct utmp current_utmp;
+  struct utmp *current_utmp;
   int fd;
-
-  size_t size_of_record = sizeof(struct utmp);
 
   if ((fd = open(UTMP_FILE, O_RDONLY)) == -1) {
     perror("open");
     exit(EXIT_FAILURE);
   }
 
-  while (read(fd, &current_utmp, size_of_record) > 0) {
-    who(&current_utmp);
+  number_of_records = 0;
+  current_record    = 0;
+
+  while ((current_utmp = utmp_next(fd)) != (struct utmp *)NULL) {
+    who(current_utmp);
   }
 
   if (close(fd) == -1) {
@@ -46,4 +56,34 @@ static void who(struct utmp *record) {
 #endif
 
   fputc('\n', stdout);
+}
+
+static struct utmp *utmp_next(int fd) {
+  struct utmp *p;
+
+  if (fd == -1) {
+    return ((struct utmp *)NULL);
+  }
+
+  if (current_record == number_of_records) {
+    if (utmp_read(fd) == 0) {
+      return ((struct utmp *)NULL);
+    }
+  }
+
+  p = (struct utmp *)&utmp_buf[current_record * UTMP_SIZE];
+
+  ++current_record;
+
+  return p;
+}
+
+static int utmp_read(int fd) {
+  ssize_t read_byte = read(fd, utmp_buf, (NUMBER_OF_RECORDS * UTMP_SIZE));
+
+  number_of_records = read_byte / UTMP_SIZE;
+
+  current_record = 0;
+
+  return number_of_records;
 }
