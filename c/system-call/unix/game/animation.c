@@ -1,29 +1,35 @@
 #include <curses.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
-int main(void) {
+int main(int argc, char **argv) {
+  if (argc != 3) {
+    fputs("./animation row col\n", stderr);
+    exit(EXIT_FAILURE);
+  }
+
+  unsigned long row = strtoul(argv[1], NULL, 10);
+  unsigned long col = strtoul(argv[2], NULL, 10);
+
   initscr();
 
   clear();
 
-  for (int n = 0; n < LINES; n++) {
-    move(n, (n + n));
+  int d = 0;
 
-    if ((n % 2) == 0) {
-      standout();
-    }
+  while (1) {
+    d = (d == 0) ? 1 : 0;
+
+    move((row + d), col);
 
     addstr("Animating ...");
-
-    if ((n % 2) == 0) {
-      standend();
-    }
 
     sleep(1);
 
     refresh();
 
-    move(n, (n + n));
+    move((row + d), col);
     addstr("             ");
   }
 
