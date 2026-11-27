@@ -24,12 +24,12 @@ struct Ball {
 static void setup(void);
 static void wrapup(void);
 
-static int bounce_or_lose(struct Ball *ball);
+static int bounce_or_lose(volatile struct Ball *ball);
 static void move_ball(int sig);
 
 static void set_ticker(int msec);
 
-struct Ball ball;
+volatile struct Ball ball;
 
 int main(void) {
   int ch;
@@ -89,7 +89,13 @@ static void setup(void) {
   mvaddch(ball.y_pos, ball.x_pos, ball.symbol);
   refresh();
 
-  signal(SIGALRM, move_ball);
+  struct sigaction action;
+
+  action.sa_handler = move_ball;
+  action.sa_flags   = 0;
+
+  sigemptyset(&action.sa_mask);
+  sigaction(SIGALRM, &action, NULL);
 
   set_ticker(1000 / TICKS_PER_SEC);
 }
@@ -99,7 +105,7 @@ static void wrapup(void) {
   endwin();
 }
 
-static int bounce_or_lose(struct Ball *ball) {
+static int bounce_or_lose(volatile struct Ball *ball) {
   int return_val = 0;
 
   if (ball->y_pos == 5) {
@@ -135,8 +141,6 @@ static void move_ball(int sig) {
 
   int moved = 0;
 
-  signal(SIGALRM, SIG_IGN);
-
   if ((ball.y_interval_ticks > 0) && (ball.y_ticks-- == 1)) {
     ball.y_pos  += ball.y_dir;
     ball.y_ticks = ball.y_interval_ticks;
@@ -160,8 +164,6 @@ static void move_ball(int sig) {
     move((LINES - 1), (COLS - 1));
     refresh();
   }
-
-  signal(SIGALRM, move_ball);
 }
 
 static void set_ticker(int msec) {
